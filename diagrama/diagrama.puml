@@ -1,0 +1,530 @@
+@startuml PlataformaEventos
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+hide empty members
+
+' ===================================================================
+' PACKAGE: Usuarios
+' ===================================================================
+package "Usuarios" {
+
+    abstract class UsuarioBase {
+        # idUsuario: String
+        # nombre: String
+        # correo: String
+        # telefono: String
+        + iniciarSesion(p: String): boolean
+        + modificarPerfil(): void
+        + {abstract} getRol(): String
+    }
+
+    class Cliente {
+        - historialCompras: List<Compra>
+        - metodosPago: List<EstrategiaPago>
+        + explorarEventos(f: Filtro): List<Evento>
+        + crearCompra(e: Evento): Compra
+        + cancelarCompra(c: Compra): void
+        + descargarComprobante(c: Compra): void
+        + actualizar(e: Evento): void
+    }
+
+    class Administrador {
+        - nivelAcceso: int
+        + gestionarEvento(e: Evento): void
+        + gestionarUsuario(u: UsuarioBase): void
+        + gestionarRecinto(r: Recinto): void
+        + registrarIncidencia(i: Incidencia): void
+        + generarReporte(tipo: String): void
+    }
+
+    class SessionManager <<Singleton>> {
+        - {static} instancia: SessionManager
+        - usuarioActual: UsuarioBase
+        - SessionManager()
+        + {static} getInstance(): SessionManager
+        + login(u: String, p: String): boolean
+        + logout(): void
+        + getUsuarioActual(): UsuarioBase
+    }
+
+    interface Observador <<interface>> {
+        + actualizar(e: Evento): void
+    }
+}
+
+' ===================================================================
+' PACKAGE: Eventos (Infraestructura + Composite)
+' ===================================================================
+package "Eventos" {
+
+    class Evento {
+        - idEvento: String
+        - nombre: String
+        - categoria: String
+        - ciudad: String
+        - fechaHora: LocalDateTime
+        - estado: EstadoEvento
+        - politicaCancelacion: String
+        - observadores: List<Observador>
+        + publicar(): void
+        + pausar(): void
+        + cancelar(): void
+        + suscribir(o: Observador): void
+        + desuscribir(o: Observador): void
+        + notificar(): void
+    }
+
+    interface SujetoNotificable <<interface>> {
+        + suscribir(o: Observador): void
+        + desuscribir(o: Observador): void
+        + notificar(): void
+    }
+
+    class EventoBuilder <<Builder>> {
+        - evento: Evento
+        + conNombre(n: String): EventoBuilder
+        + conCategoria(c: String): EventoBuilder
+        + conRecinto(r: Recinto): EventoBuilder
+        + conFecha(f: LocalDateTime): EventoBuilder
+        + conPolitica(p: String): EventoBuilder
+        + build(): Evento
+    }
+
+    class Recinto {
+        - idRecinto: String
+        - nombre: String
+        - direccion: String
+        - ciudad: String
+        + agregarZona(z: Zona): void
+        + eliminarZona(z: Zona): void
+        + capacidadTotal(): int
+    }
+
+    interface ComponenteRecinto <<interface>> {
+        + getCapacidad(): int
+        + getOcupacion(): int
+        + getNombre(): String
+    }
+
+    class Zona <<Composite>> {
+        - idZona: String
+        - nombre: String
+        - precioBase: double
+        - capacidad: int
+        - hijos: List<ComponenteRecinto>
+        + agregar(c: ComponenteRecinto): void
+        + remover(c: ComponenteRecinto): void
+        + getCapacidad(): int
+        + getOcupacion(): int
+    }
+
+    class Asiento <<Leaf>> {
+        - idAsiento: String
+        - fila: String
+        - numero: int
+        - estado: EstadoAsiento
+        + getCapacidad(): int
+        + getOcupacion(): int
+        + reservar(): void
+        + liberar(): void
+        + bloquear(): void
+    }
+
+    enum EstadoEvento {
+        BORRADOR
+        PUBLICADO
+        PAUSADO
+        CANCELADO
+        FINALIZADO
+    }
+
+    enum EstadoAsiento {
+        DISPONIBLE
+        RESERVADO
+        VENDIDO
+        BLOQUEADO
+    }
+}
+
+' ===================================================================
+' PACKAGE: Transacciones (Compra, Entrada, Tarifa, Incidencia)
+' ===================================================================
+package "Transacciones" {
+
+    class Compra {
+        - idCompra: String
+        - fechaCreacion: LocalDateTime
+        - total: double
+        - estado: EstadoCompra
+        - entradas: List<IEntrada>
+        - incidencias: List<Incidencia>
+        - estrategiaPago: EstrategiaPago
+        + agregarEntrada(e: IEntrada): void
+        + agregarServicio(s: IEntrada): void
+        + pagar(): void
+        + cancelar(): void
+        + reembolsar(): void
+        + calcularTotal(): double
+        + setEstado(s: EstadoCompra): void
+    }
+
+    interface EstadoCompra <<interface>> {
+        + pagar(c: Compra): void
+        + cancelar(c: Compra): void
+        + reembolsar(c: Compra): void
+    }
+
+    class EstadoCreada {
+        + pagar(c: Compra): void
+        + cancelar(c: Compra): void
+        + reembolsar(c: Compra): void
+    }
+
+    class EstadoPagada {
+        + pagar(c: Compra): void
+        + cancelar(c: Compra): void
+        + reembolsar(c: Compra): void
+    }
+
+    class EstadoCancelada {
+        + pagar(c: Compra): void
+        + cancelar(c: Compra): void
+        + reembolsar(c: Compra): void
+    }
+
+    interface IEntrada <<interface>> {
+        + getPrecio(): double
+        + getDescripcion(): String
+    }
+
+    class Entrada {
+        - idEntrada: String
+        - estado: String
+        - precioBase: double
+        - zona: Zona
+        - asiento: Asiento
+        + getPrecio(): double
+        + getDescripcion(): String
+        + anular(): void
+        + validar(): boolean
+        + generarQR(): String
+    }
+
+    abstract class EntradaDecorator <<Decorator>> {
+        # envuelta: IEntrada
+        + getPrecio(): double
+        + getDescripcion(): String
+    }
+
+    class ServicioVIPDecorator {
+        - costoVIP: double
+        + getPrecio(): double
+        + getDescripcion(): String
+    }
+
+    class SeguroDecorator {
+        - prima: double
+        + getPrecio(): double
+        + getDescripcion(): String
+    }
+
+    class ParqueaderoDecorator {
+        - tarifa: double
+        + getPrecio(): double
+        + getDescripcion(): String
+    }
+
+    class Tarifa {
+        - idTarifa: String
+        - concepto: String
+        - valorBase: double
+        - impuesto: double
+        + calcular(): double
+    }
+
+    class Incidencia {
+        - idIncidencia: String
+        - tipo: String
+        - descripcion: String
+        - fecha: LocalDateTime
+        + registrar(): void
+        + asociarEvento(e: Evento): void
+        + asociarCompra(c: Compra): void
+    }
+}
+
+' ===================================================================
+' PACKAGE: Pagos (Strategy + Adapter)
+' ===================================================================
+package "Pagos" {
+
+    class ProcesadorPago {
+        - estrategia: EstrategiaPago
+        - pasarela: IPasarelaPago
+        + procesar(c: Compra): boolean
+        + setEstrategia(e: EstrategiaPago): void
+    }
+
+    interface EstrategiaPago <<interface>> {
+        + pagar(monto: double): boolean
+    }
+
+    class PagoTarjeta {
+        - numero: String
+        - cvv: String
+        - vencimiento: String
+        + pagar(monto: double): boolean
+    }
+
+    class PagoPSE {
+        - banco: String
+        - cuenta: String
+        + pagar(monto: double): boolean
+    }
+
+    class PagoBilleteraVirtual {
+        - proveedor: String
+        - telefono: String
+        + pagar(monto: double): boolean
+    }
+
+    interface IPasarelaPago <<interface>> {
+        + ejecutar(monto: double): boolean
+    }
+
+    class PasarelaAdapter <<Adapter>> {
+        - externa: PasarelaExternaAPI
+        + ejecutar(monto: double): boolean
+    }
+
+    class PasarelaExternaAPI <<Adaptee>> {
+        - apiKey: String
+        - endpoint: String
+        + sendPayment(amount: double, token: String): String
+        + verifyTransaction(id: String): boolean
+    }
+}
+
+' ===================================================================
+' PACKAGE: Reportes (Factory Method - Creator/Product separados)
+' ===================================================================
+package "Reportes" {
+
+    class ReporteOperativo {
+        - tipo: String
+        - rangoFechas: String
+        - datos: Map<String, Object>
+        + agregarMetrica(k: String, v: Object): void
+        + getDatos(): Map<String, Object>
+    }
+
+    interface IReporte <<interface - Product>> {
+        + exportar(ruta: String): void
+        + getFormato(): String
+    }
+
+    class ReportePDF {
+        - documento: PDDocument
+        + exportar(ruta: String): void
+        + getFormato(): String
+    }
+
+    class ReporteCSV {
+        - writer: CSVWriter
+        + exportar(ruta: String): void
+        + getFormato(): String
+    }
+
+    abstract class ReporteFactory <<FactoryMethod - Creator>> {
+        + {abstract} crearReporte(datos: ReporteOperativo): IReporte
+        + generar(datos: ReporteOperativo, ruta: String): void
+    }
+
+    class PdfReporteFactory {
+        + crearReporte(datos: ReporteOperativo): IReporte
+    }
+
+    class CsvReporteFactory {
+        + crearReporte(datos: ReporteOperativo): IReporte
+    }
+}
+
+' ===================================================================
+' RELACIONES - Herencia y Realización
+' ===================================================================
+
+UsuarioBase <|-- Cliente
+UsuarioBase <|-- Administrador
+Observador <|.. Cliente
+SujetoNotificable <|.. Evento
+
+ComponenteRecinto <|.. Zona
+ComponenteRecinto <|.. Asiento
+
+EstadoCompra <|.. EstadoCreada
+EstadoCompra <|.. EstadoPagada
+EstadoCompra <|.. EstadoCancelada
+
+IEntrada <|.. Entrada
+IEntrada <|.. EntradaDecorator
+EntradaDecorator <|-- ServicioVIPDecorator
+EntradaDecorator <|-- SeguroDecorator
+EntradaDecorator <|-- ParqueaderoDecorator
+
+EstrategiaPago <|.. PagoTarjeta
+EstrategiaPago <|.. PagoPSE
+EstrategiaPago <|.. PagoBilleteraVirtual
+
+IPasarelaPago <|.. PasarelaAdapter
+
+IReporte <|.. ReportePDF
+IReporte <|.. ReporteCSV
+ReporteFactory <|-- PdfReporteFactory
+ReporteFactory <|-- CsvReporteFactory
+
+' ===================================================================
+' RELACIONES - Composición / Agregación / Asociación
+' ===================================================================
+
+Evento "0..*" --> "1" Recinto : se realiza en
+Recinto "1" *-- "1..*" Zona : contiene
+Zona "1" *-- "0..*" Asiento : contiene
+
+Cliente "1" o-- "0..*" Compra : realiza
+Compra "0..*" --> "1" Evento : pertenece a
+Compra "1" *-- "1..*" IEntrada : agrega
+Compra "1" o-- "0..*" Incidencia : registra
+Compra "1" --> "1" EstadoCompra : delega
+Compra "1" --> "1" EstrategiaPago : usa
+
+EntradaDecorator o-- "1" IEntrada : envuelve
+Entrada "1" --> "1" Zona
+Entrada "0..*" --> "0..1" Asiento
+Zona "1" --> "1" Tarifa
+
+ProcesadorPago "1" o-- "1" EstrategiaPago : inyecta (DIP)
+ProcesadorPago "1" o-- "1" IPasarelaPago : inyecta (DIP)
+PasarelaAdapter "1" *-- "1" PasarelaExternaAPI : adapta
+
+SessionManager "1" --> "0..1" UsuarioBase : usuarioActual
+EventoBuilder ..> Evento : << build >>
+
+Evento "1" --> "0..*" Observador : notifica
+
+Administrador ..> ReporteOperativo : genera
+ReporteFactory ..> IReporte : << crea >>
+ReporteOperativo --> ReporteFactory : procesado-por
+Administrador ..> Incidencia : registra
+Incidencia "0..*" --> "0..1" Evento : afecta
+Incidencia "0..*" --> "0..1" Compra : afecta
+
+' ===================================================================
+' NOTAS - Patrones de Diseño (9)
+' ===================================================================
+
+note top of SessionManager
+  **[Creacional] SINGLETON**
+  Constructor privado + getInstance() estático.
+  Garantiza única instancia de sesión global.
+end note
+
+note top of EventoBuilder
+  **[Creacional] BUILDER**
+  Construcción paso a paso de Evento
+  (recinto, zonas, fecha, políticas).
+end note
+
+note top of ReporteFactory
+  **[Creacional] FACTORY METHOD** (RF-046)
+  Creator (ReporteFactory) separado del
+  Producto (IReporte). crearReporte() es
+  el método fábrica que devuelve
+  ReportePDF o ReporteCSV.
+end note
+
+note top of EntradaDecorator
+  **[Estructural] DECORATOR** (RF-050)
+  Envuelve IEntrada para recalcular
+  precio y descripción dinámicamente:
+  VIP + Seguro + Parqueadero sobre Entrada.
+end note
+
+note top of PasarelaAdapter
+  **[Estructural] ADAPTER**
+  Adapta la API externa
+  (PasarelaExternaAPI) a la interfaz
+  IPasarelaPago del dominio.
+end note
+
+note top of ComponenteRecinto
+  **[Estructural] COMPOSITE**
+  Zona (Composite) y Asiento (Leaf)
+  calculan capacidad/ocupación
+  recursivamente.
+end note
+
+note top of EstrategiaPago
+  **[Comportamiento] STRATEGY** (RF-051)
+  Intercambia algoritmos de pago
+  (Tarjeta / PSE / Billetera) en
+  tiempo de ejecución.
+end note
+
+note top of EstadoCompra
+  **[Comportamiento] STATE**
+  Compra delega pagar/cancelar/reembolsar
+  al estado actual. Transiciones:
+  Creada → Pagada → Cancelada.
+end note
+
+note top of Observador
+  **[Comportamiento] OBSERVER**
+  Evento (SujetoNotificable) notifica a
+  Clientes (Observador) cuando cambia
+  estado (p. ej., cancelación).
+end note
+
+' ===================================================================
+' NOTAS - Principios SOLID
+' ===================================================================
+
+note bottom of UsuarioBase
+  **SOLID - LSP**
+  Cliente y Administrador son sustituibles
+  por UsuarioBase sin romper contratos
+  (iniciarSesion, getRol).
+end note
+
+note bottom of Cliente
+  **SOLID - SRP**
+  Cliente sólo gestiona su perfil y compras.
+  La lógica de pago, estado y notificación
+  vive en clases dedicadas.
+end note
+
+note bottom of EstrategiaPago
+  **SOLID - OCP**
+  Agregar un nuevo método de pago
+  (p. ej. Cripto) no modifica Compra ni
+  ProcesadorPago: se extiende la interfaz.
+end note
+
+note bottom of Observador
+  **SOLID - ISP**
+  Interfaces segregadas y mínimas:
+  Observador, SujetoNotificable,
+  ComponenteRecinto, IEntrada
+  exponen sólo lo necesario.
+end note
+
+note bottom of ProcesadorPago
+  **SOLID - DIP**
+  Depende de abstracciones
+  (EstrategiaPago, IPasarelaPago),
+  no de implementaciones concretas.
+  Inyección vía constructor/setter.
+end note
+
+@enduml
