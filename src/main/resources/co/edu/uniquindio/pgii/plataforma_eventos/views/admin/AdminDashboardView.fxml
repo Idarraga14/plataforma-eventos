@@ -39,7 +39,7 @@
                 </VBox>
                 <VBox style="-fx-background-color: #34495e; -fx-padding: 10;" prefWidth="180.0">
                     <Label text="Ventas del Mes" style="-fx-text-fill: #bdc3c7; -fx-font-size: 11px;"/>
-                    <Label fx:id="lblVentasMes" text="$0"
+                    <Label fx:id="lblVentasMes" text="text"
                            style="-fx-text-fill: #f39c12; -fx-font-size: 24px; -fx-font-weight: bold;"/>
                 </VBox>
                 <VBox style="-fx-background-color: #34495e; -fx-padding: 10;" prefWidth="180.0">

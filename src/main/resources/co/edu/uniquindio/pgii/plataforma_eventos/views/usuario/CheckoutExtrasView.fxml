@@ -6,7 +6,6 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane prefWidth="560.0" prefHeight="480.0"
@@ -32,10 +31,12 @@
 
             <!-- Extra 1: Pase VIP -->
             <HBox spacing="14.0" alignment="CENTER_LEFT"
-                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-padding: 14;">
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
+                <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
                 <CheckBox fx:id="chkPaseVip" onAction="#onExtrasChanged"/>
                 <VBox spacing="3.0" HBox.hgrow="ALWAYS">
-                    <Label text="Pase VIP" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Pase VIP"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
                     <Label text="Acceso prioritario, zona exclusiva y beneficios especiales."
                            style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
                 </VBox>
@@ -43,14 +44,15 @@
                        style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
             </HBox>
 
-            <!-- Extra 2: Seguro de Cancelación -->
+            <!-- Extra 2: Seguro de Cancelacion -->
             <HBox spacing="14.0" alignment="CENTER_LEFT"
-                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-padding: 14;">
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
+                <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
                 <CheckBox fx:id="chkSeguroCancelacion" onAction="#onExtrasChanged"/>
                 <VBox spacing="3.0" HBox.hgrow="ALWAYS">
-                    <Label text="Seguro de Cancelación"
+                    <Label text="Seguro de Cancelacion"
                            style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
-                    <Label text="Reembolso total si cancelas con 48 h de anticipación."
+                    <Label text="Reembolso total si cancelas con 48 h de anticipacion."
                            style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
                 </VBox>
                 <Label fx:id="lblPrecioSeguro" text="+ $30.000"
@@ -59,10 +61,12 @@
 
             <!-- Extra 3: Parqueadero -->
             <HBox spacing="14.0" alignment="CENTER_LEFT"
-                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-padding: 14;">
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
+                <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
                 <CheckBox fx:id="chkParqueadero" onAction="#onExtrasChanged"/>
                 <VBox spacing="3.0" HBox.hgrow="ALWAYS">
-                    <Label text="Parqueadero" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Parqueadero"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
                     <Label text="Cupo de parqueo cubierto y seguro en el recinto."
                            style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
                 </VBox>
@@ -76,7 +80,7 @@
             <HBox spacing="10.0" alignment="CENTER_RIGHT">
                 <Label text="Total extras:"
                        style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
-                <Label fx:id="lblTotalExtras" text="$0"
+                <Label fx:id="lblTotalExtras" text="texto"
                        style="-fx-font-size: 16px; -fx-text-fill: #e67e22; -fx-font-weight: bold;"/>
             </HBox>
         </VBox>
@@ -86,8 +90,8 @@
     <bottom>
         <HBox spacing="10.0" alignment="CENTER_RIGHT">
             <padding><Insets top="10.0" right="16.0" bottom="10.0" left="16.0"/></padding>
-            <Button fx:id="btnVolver"    text="← Volver"    onAction="#onVolverClick"/>
-            <Button fx:id="btnContinuar" text="Continuar →" onAction="#onContinuarClick"
+            <Button fx:id="btnVolver"    text="Volver"    onAction="#onVolverClick"/>
+            <Button fx:id="btnContinuar" text="Continuar" onAction="#onContinuarClick"
                     style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 13px;"/>
         </HBox>
     </bottom>
