@@ -45,7 +45,7 @@
         <VBox spacing="10.0">
             <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
 
-            <TableView fx:id="tblEventos" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tablaEventos" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="colNombre"    text="Nombre"    prefWidth="220.0"/>
                     <TableColumn fx:id="colFecha"     text="Fecha"     prefWidth="140.0"/>

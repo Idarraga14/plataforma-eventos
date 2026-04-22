@@ -2,6 +2,7 @@ package co.edu.uniquindio.pgii.plataforma_eventos.infrastructure;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.observer.EventoObserver;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Recinto;
@@ -71,11 +72,17 @@ public class PlataformaEventosSingleton {
                 .enRecinto(estadio)
                 .build();
 
+        concierto.setEstado(EventoEstado.PUBLICADO);
         this.eventos.add(concierto);
 
         // 3. Crear un Usuario administrador/prueba
-        Usuario admin = new Usuario("Admin Sistema", "admin@plataforma.com", "3001234567");
+        Usuario admin = new Usuario("Admin Sistema", "admin@plataforma.com", "3001234567", "pass123", true);
         this.usuarios.add(admin);
+        System.out.println("Usuario admin creado: " + admin.getIdUsuario() + ", correo: " + admin.getCorreo() + ", password: " + admin.getPassword());
+
+        Usuario usuario = new Usuario("Idarraga", "juan@gmail.com", "3001234567", "pass123", false);
+        this.usuarios.add(usuario);
+        System.out.println("Usuario usuario creado: " + usuario.getIdUsuario() + ", correo: " + usuario.getCorreo() + ", password: " + usuario.getPassword());
     }
 
     public Usuario buscarUsuario(String idUsuario) {

@@ -10,14 +10,17 @@ public class Usuario {
     private String correo;
     private String password;
     private String numeroTelefono;
+    private boolean esAdmin;
     private List<MedioPago> mediosPago;
 
-    public Usuario(String nombreCompleto, String correo, String numeroTelefono) {
+    public Usuario(String nombreCompleto, String correo, String numeroTelefono, String password, boolean esAdmin) {
         this.idUsuario = UUID.randomUUID().toString();
         this.nombreCompleto = nombreCompleto;
         this.correo = correo;
         this.numeroTelefono = numeroTelefono;
+        this.password = password;
         this.mediosPago = new ArrayList<>();
+        this.esAdmin = esAdmin;
     }
 
     public String getIdUsuario() {
@@ -42,5 +45,9 @@ public class Usuario {
 
     public String getPassword() {
         return password;
+    }
+
+    public boolean getEsAdmin() {
+        return esAdmin;
     }
 }

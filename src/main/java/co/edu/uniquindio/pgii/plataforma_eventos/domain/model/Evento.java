@@ -15,7 +15,7 @@ public class Evento {
     private final String descripcion;
     private final String ciudad;
     private final LocalDateTime fecha;
-    private final EventoEstado estado;
+    private EventoEstado estado;
     private final List<String> politicas;
     private final Recinto recinto;
 
@@ -65,6 +65,10 @@ public class Evento {
 
     public Recinto getRecinto() {
         return recinto;
+    }
+
+    public void setEstado(EventoEstado estado) {
+        this.estado = estado;
     }
 
     public static class EventoBuilder {
@@ -130,4 +134,6 @@ public class Evento {
             return new Evento(this);
         }
     }
+
+
 }

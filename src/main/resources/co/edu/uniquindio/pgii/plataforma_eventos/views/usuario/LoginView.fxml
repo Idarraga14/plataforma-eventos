@@ -32,20 +32,8 @@
     <Label text="Contraseña" style="-fx-font-weight: bold;"/>
     <PasswordField fx:id="txtPassword" promptText="Ingrese su contraseña" maxWidth="Infinity"/>
 
-    <!-- Mensaje de error (oculto por defecto) -->
-    <Label fx:id="lblMensajeError"
-           style="-fx-text-fill: #e74c3c; -fx-font-size: 12px;"
-           wrapText="true"
-           visible="false"
-           managed="false"/>
-
     <!-- Botón principal -->
     <Button fx:id="btnLogin" text="Iniciar Sesión" maxWidth="Infinity"
             onAction="#onLoginClick"
             style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px;"/>
-
-    <!-- Link a Registro -->
-    <Hyperlink fx:id="btnIrARegistro"
-               text="¿No tienes cuenta? Regístrate aquí"
-               onAction="#onIrARegistroClick"/>
 </VBox>

@@ -22,8 +22,4 @@ public class PlataformaEventosApp extends Application {
         // El punto de entrada lógico de cualquier sistema es el Login
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", primaryStage);
     }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
 }

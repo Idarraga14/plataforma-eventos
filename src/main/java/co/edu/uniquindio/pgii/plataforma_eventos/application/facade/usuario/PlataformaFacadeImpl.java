@@ -7,6 +7,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDeco
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
@@ -66,7 +67,9 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
 
     @Override
     public List<Evento> obtenerEventosDisponibles() {
-        return List.of();
+        return PlataformaEventosSingleton.getInstance().getEventos().stream()
+                .filter(evento -> evento.getEstado() == EventoEstado.PUBLICADO)
+                .toList();
     }
 
     @Override
@@ -76,7 +79,10 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
 
     @Override
     public Usuario login(String correo, String password) {
-        return null;
+        return PlataformaEventosSingleton.getInstance().getUsuarios().stream()
+                .filter(u -> u.getCorreo().equals(correo) && u.getPassword().equals(password))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Correo o contraseña incorrectos."));
     }
 
     @Override
