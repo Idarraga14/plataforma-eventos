@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="920.0" prefHeight="620.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario.HistorialComprasController">
+
+    <!-- ═══ PANEL SUPERIOR: Encabezado + Filtros ═══ -->
+    <top>
+        <VBox spacing="8.0" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;">
+            <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+
+            <Label text="Historial de Compras"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+            <!-- Barra de filtros -->
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <TextField fx:id="txtBuscarEvento" promptText="Buscar por nombre de evento…" prefWidth="200.0"/>
+                <Label text="Desde:"/>
+                <DatePicker fx:id="dtpFechaDesde" promptText="Fecha inicio"/>
+                <Label text="Hasta:"/>
+                <DatePicker fx:id="dtpFechaHasta" promptText="Fecha fin"/>
+                <Label text="Estado:"/>
+                <ComboBox fx:id="comboEstado" promptText="Todos" prefWidth="130.0"/>
+                <Button fx:id="btnFiltrar"  text="Filtrar"  onAction="#onFiltrarClick"
+                        style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+                <Button fx:id="btnLimpiar"  text="Limpiar"  onAction="#onLimpiarFiltrosClick"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ═══ PANEL CENTRAL: Tabla de Compras ═══ -->
+    <center>
+        <VBox spacing="8.0">
+            <padding><Insets top="12.0" right="16.0" bottom="8.0" left="16.0"/></padding>
+
+            <TableView fx:id="tblCompras" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colIdCompra"     text="ID Compra"    prefWidth="120.0"/>
+                    <TableColumn fx:id="colEvento"       text="Evento"       prefWidth="200.0"/>
+                    <TableColumn fx:id="colFechaCompra"  text="Fecha"        prefWidth="130.0"/>
+                    <TableColumn fx:id="colTotal"        text="Total ($)"    prefWidth="100.0"/>
+                    <TableColumn fx:id="colEstadoCompra" text="Estado"       prefWidth="110.0"/>
+                    <TableColumn fx:id="colEntradas"     text="# Entradas"   prefWidth="80.0"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <!-- ═══ PANEL INFERIOR: Acciones ═══ -->
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+            <padding><Insets top="10.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+
+            <!-- Exportar -->
+            <Button fx:id="btnExportarPdf" text="Exportar PDF"
+                    onAction="#onExportarPdfClick"
+                    style="-fx-background-color: #8e44ad; -fx-text-fill: white;"/>
+            <Button fx:id="btnExportarCsv" text="Exportar CSV"
+                    onAction="#onExportarCsvClick"
+                    style="-fx-background-color: #16a085; -fx-text-fill: white;"/>
+
+            <!-- Cancelar Compra:
+                 NOTA: la propiedad `disable` de este botón se bindeará
+                 dinámicamente en initialize() según el estado de la compra
+                 seleccionada. Sólo estará habilitado cuando el estado
+                 de la compra sea CREADA o PAGADA. -->
+            <Button fx:id="btnCancelarCompra" text="Cancelar Compra"
+                    onAction="#onCancelarCompraClick"
+                    disable="true"
+                    style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

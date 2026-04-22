@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="900.0" prefHeight="620.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.admin.AdminUsuariosController">
+
+    <!-- ═══ ENCABEZADO ═══ -->
+    <top>
+        <VBox style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;">
+            <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+            <Label text="Gestión de Usuarios"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <padding><Insets top="8.0"/></padding>
+                <Label text="Buscar:"/>
+                <TextField fx:id="txtBuscarUsuario" promptText="Nombre o correo…" prefWidth="260.0"
+                           onAction="#onBuscarUsuarioAction"/>
+                <Button fx:id="btnBuscarUsuario" text="Buscar" onAction="#onBuscarUsuarioClick"
+                        style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+                <Button fx:id="btnLimpiarBusqueda" text="Limpiar" onAction="#onLimpiarBusquedaClick"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ═══ CONTENIDO CENTRAL ═══ -->
+    <center>
+        <HBox spacing="0.0">
+            <!-- Tabla principal -->
+            <TableView fx:id="tblUsuarios" HBox.hgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colNombre"   text="Nombre"   prefWidth="200.0"/>
+                    <TableColumn fx:id="colCorreo"   text="Correo"   prefWidth="220.0"/>
+                    <TableColumn fx:id="colTelefono" text="Teléfono" prefWidth="130.0"/>
+                    <TableColumn fx:id="colEstado"   text="Estado"   prefWidth="110.0"/>
+                </columns>
+            </TableView>
+
+            <!-- Panel lateral de acciones -->
+            <VBox spacing="10.0" alignment="TOP_CENTER"
+                  style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-width: 0 0 0 1;">
+                <padding><Insets top="20.0" right="16.0" bottom="20.0" left="16.0"/></padding>
+                <Button fx:id="btnCrearUsuario" text="Crear Usuario" maxWidth="Infinity"
+                        onAction="#onCrearUsuarioClick"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                <Button fx:id="btnEditarUsuario" text="Editar Usuario" maxWidth="Infinity"
+                        onAction="#onEditarUsuarioClick"
+                        style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+                <Button fx:id="btnBloquearUsuario" text="Bloquear / Desbloquear" maxWidth="Infinity"
+                        onAction="#onBloquearUsuarioClick"
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+            </VBox>
+        </HBox>
+    </center>
+
+    <!-- ═══ PANEL INFERIOR ═══ -->
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding><Insets top="8.0" right="16.0" bottom="8.0" left="16.0"/></padding>
+            <Label fx:id="lblTotalUsuarios" text="Total: 0 usuarios"
+                   style="-fx-text-fill: #7f8c8d;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

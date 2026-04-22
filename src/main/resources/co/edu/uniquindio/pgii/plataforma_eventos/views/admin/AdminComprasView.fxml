@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="1000.0" prefHeight="640.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.admin.AdminComprasController">
+
+    <!-- ═══ ENCABEZADO ═══ -->
+    <top>
+        <VBox style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;">
+            <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+            <Label text="Gestión de Compras del Sistema"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+            <!-- Barra de filtros -->
+            <HBox spacing="12.0" alignment="CENTER_LEFT">
+                <padding><Insets top="8.0"/></padding>
+                <Label text="Usuario:"/>
+                <TextField fx:id="txtFiltroUsuario" promptText="Nombre o correo…" prefWidth="180.0"/>
+
+                <Label text="Evento:"/>
+                <TextField fx:id="txtFiltroEvento" promptText="Nombre del evento…" prefWidth="180.0"/>
+
+                <Label text="Estado:"/>
+                <ComboBox fx:id="comboFiltroEstado" promptText="Todos" prefWidth="130.0"/>
+
+                <Label text="Desde:"/>
+                <DatePicker fx:id="dtpDesde"/>
+
+                <Button fx:id="btnFiltrar" text="Filtrar" onAction="#onFiltrarClick"
+                        style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+                <Button fx:id="btnLimpiarFiltros" text="Limpiar" onAction="#onLimpiarFiltrosClick"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ═══ CONTENIDO CENTRAL ═══ -->
+    <center>
+        <VBox spacing="8.0">
+            <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+            <TableView fx:id="tblCompras" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colIdCompra"  text="ID"           prefWidth="80.0"/>
+                    <TableColumn fx:id="colUsuario"   text="Usuario"      prefWidth="180.0"/>
+                    <TableColumn fx:id="colEvento"    text="Evento"       prefWidth="200.0"/>
+                    <TableColumn fx:id="colFecha"     text="Fecha"        prefWidth="130.0"/>
+                    <TableColumn fx:id="colTotal"     text="Total"        prefWidth="100.0"/>
+                    <TableColumn fx:id="colEstado"    text="Estado"       prefWidth="110.0"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <!-- ═══ PANEL INFERIOR: Acciones ═══ -->
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+            <padding><Insets top="10.0" right="16.0" bottom="10.0" left="16.0"/></padding>
+            <Label fx:id="lblTotalCompras" text="Total: 0 compras"
+                   style="-fx-text-fill: #7f8c8d;"/>
+            <Button fx:id="btnReasignarAsiento" text="Reasignar Asiento"
+                    onAction="#onReasignarAsientoClick"
+                    style="-fx-background-color: #e67e22; -fx-text-fill: white;"/>
+            <Button fx:id="btnRegistrarReembolso" text="Registrar Reembolso"
+                    onAction="#onRegistrarReembolsoClick"
+                    style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

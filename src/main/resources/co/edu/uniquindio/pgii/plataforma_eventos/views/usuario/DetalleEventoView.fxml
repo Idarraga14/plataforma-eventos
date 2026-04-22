@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
+
+<BorderPane prefWidth="700.0" prefHeight="580.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario.DetalleEventoController">
+
+    <!-- ═══ ENCABEZADO ═══ -->
+    <top>
+        <VBox style="-fx-background-color: #2c3e50;">
+            <padding><Insets top="18.0" right="20.0" bottom="18.0" left="20.0"/></padding>
+            <Label fx:id="lblTitulo" text="Nombre del Evento"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Label fx:id="lblCategoria" text="Categoría"
+                   style="-fx-font-size: 13px; -fx-text-fill: #bdc3c7;"/>
+        </VBox>
+    </top>
+
+    <!-- ═══ CONTENIDO CENTRAL ═══ -->
+    <center>
+        <ScrollPane fitToWidth="true">
+            <VBox spacing="14.0">
+                <padding><Insets top="18.0" right="24.0" bottom="18.0" left="24.0"/></padding>
+
+                <!-- Información principal -->
+                <GridPane hgap="16.0" vgap="10.0">
+                    <columnConstraints>
+                        <ColumnConstraints prefWidth="130.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <Label text="Descripción:"    GridPane.rowIndex="0" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblDescripcion" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                           wrapText="true"/>
+
+                    <Label text="Fecha y hora:"   GridPane.rowIndex="1" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblFecha"       GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                    <Label text="Ciudad:"         GridPane.rowIndex="2" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblCiudad"      GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                    <Label text="Recinto:"        GridPane.rowIndex="3" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblRecinto"     GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                    <Label text="Aforo total:"    GridPane.rowIndex="4" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblAforo"       GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                    <Label text="Estado:"         GridPane.rowIndex="5" GridPane.columnIndex="0"
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblEstado"      GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                </GridPane>
+
+                <Separator/>
+
+                <!-- Reglas del evento -->
+                <Label text="Reglas del Evento" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <Label fx:id="lblReglas" wrapText="true"
+                       style="-fx-text-fill: #555;"/>
+
+                <Separator/>
+
+                <!-- Políticas (lista) -->
+                <Label text="Políticas de Compra" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <ListView fx:id="listPoliticas" prefHeight="100.0"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- ═══ PANEL INFERIOR: Acciones ═══ -->
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+            <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+            <Button fx:id="btnVolver" text="← Volver" onAction="#onVolverClick"/>
+            <Button fx:id="btnComprar" text="Seleccionar Asientos / Comprar"
+                    onAction="#onComprarClick"
+                    style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 14px;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

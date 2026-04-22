@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="900.0" prefHeight="620.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.admin.AdminRecintosController">
+
+    <!-- ═══ ENCABEZADO ═══ -->
+    <top>
+        <VBox style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;">
+            <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+            <Label text="Gestión de Recintos y Zonas"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <padding><Insets top="8.0"/></padding>
+                <Label text="Buscar:"/>
+                <TextField fx:id="txtBuscarRecinto" promptText="Nombre del recinto…" prefWidth="240.0"
+                           onAction="#onBuscarRecintoAction"/>
+                <Button fx:id="btnBuscarRecinto" text="Buscar" onAction="#onBuscarRecintoClick"
+                        style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ═══ CONTENIDO CENTRAL ═══ -->
+    <center>
+        <HBox spacing="0.0">
+            <!-- Tabla principal de recintos -->
+            <!-- Doble clic en fila → onAbrirModalAsientos -->
+            <TableView fx:id="tblRecintos" HBox.hgrow="ALWAYS"
+                       onMouseClicked="#onTablaRecintoClick">
+                <columns>
+                    <TableColumn fx:id="colNombreRecinto" text="Recinto"  prefWidth="220.0"/>
+                    <TableColumn fx:id="colDireccion"     text="Dirección" prefWidth="200.0"/>
+                    <TableColumn fx:id="colCiudad"        text="Ciudad"   prefWidth="120.0"/>
+                    <TableColumn fx:id="colAforo"         text="Aforo"    prefWidth="80.0"/>
+                    <TableColumn fx:id="colZonas"         text="Zonas"    prefWidth="70.0"/>
+                </columns>
+                <placeholder>
+                    <Label text="Haz doble clic sobre un recinto para gestionar sus asientos."/>
+                </placeholder>
+            </TableView>
+
+            <!-- Panel lateral de acciones -->
+            <VBox spacing="10.0" alignment="TOP_CENTER"
+                  style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-width: 0 0 0 1;">
+                <padding><Insets top="20.0" right="16.0" bottom="20.0" left="16.0"/></padding>
+                <Button fx:id="btnCrearRecinto" text="Crear Recinto" maxWidth="Infinity"
+                        onAction="#onCrearRecintoClick"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                <Button fx:id="btnEditarRecinto" text="Editar Recinto" maxWidth="Infinity"
+                        onAction="#onEditarRecintoClick"
+                        style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+                <Button fx:id="btnEliminarRecinto" text="Eliminar Recinto" maxWidth="Infinity"
+                        onAction="#onEliminarRecintoClick"
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+                <Button fx:id="btnAbrirModalAsientos" text="Gestionar Asientos" maxWidth="Infinity"
+                        onAction="#onAbrirModalAsientos"
+                        style="-fx-background-color: #8e44ad; -fx-text-fill: white;"/>
+            </VBox>
+        </HBox>
+    </center>
+
+    <!-- ═══ PANEL INFERIOR ═══ -->
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding><Insets top="8.0" right="16.0" bottom="8.0" left="16.0"/></padding>
+            <Label fx:id="lblHintDobleClick"
+                   text="Doble clic sobre una fila para gestionar sus zonas y asientos."
+                   style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

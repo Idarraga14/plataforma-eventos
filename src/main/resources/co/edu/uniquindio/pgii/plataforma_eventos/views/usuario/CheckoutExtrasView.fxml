@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="560.0" prefHeight="480.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario.CheckoutExtrasController">
+
+    <!-- ═══ ENCABEZADO ═══ -->
+    <top>
+        <VBox style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;">
+            <padding><Insets top="14.0" right="16.0" bottom="14.0" left="16.0"/></padding>
+            <Label text="Servicios Adicionales"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label text="Mejora tu experiencia con los siguientes extras opcionales."
+                   style="-fx-text-fill: #7f8c8d;"/>
+        </VBox>
+    </top>
+
+    <!-- ═══ CONTENIDO CENTRAL ═══ -->
+    <center>
+        <VBox spacing="18.0">
+            <padding><Insets top="24.0" right="30.0" bottom="24.0" left="30.0"/></padding>
+
+            <!-- Extra 1: Pase VIP -->
+            <HBox spacing="14.0" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-padding: 14;">
+                <CheckBox fx:id="chkPaseVip" onAction="#onExtrasChanged"/>
+                <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                    <Label text="Pase VIP" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Acceso prioritario, zona exclusiva y beneficios especiales."
+                           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
+                </VBox>
+                <Label fx:id="lblPrecioPaseVip" text="+ $150.000"
+                       style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- Extra 2: Seguro de Cancelación -->
+            <HBox spacing="14.0" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-padding: 14;">
+                <CheckBox fx:id="chkSeguroCancelacion" onAction="#onExtrasChanged"/>
+                <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                    <Label text="Seguro de Cancelación"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Reembolso total si cancelas con 48 h de anticipación."
+                           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
+                </VBox>
+                <Label fx:id="lblPrecioSeguro" text="+ $30.000"
+                       style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- Extra 3: Parqueadero -->
+            <HBox spacing="14.0" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-padding: 14;">
+                <CheckBox fx:id="chkParqueadero" onAction="#onExtrasChanged"/>
+                <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                    <Label text="Parqueadero" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Cupo de parqueo cubierto y seguro en el recinto."
+                           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
+                </VBox>
+                <Label fx:id="lblPrecioParqueadero" text="+ $20.000"
+                       style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <Separator/>
+
+            <!-- Resumen de precio -->
+            <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                <Label text="Total extras:"
+                       style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <Label fx:id="lblTotalExtras" text="$0"
+                       style="-fx-font-size: 16px; -fx-text-fill: #e67e22; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </center>
+
+    <!-- ═══ PANEL INFERIOR: Acciones ═══ -->
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+            <padding><Insets top="10.0" right="16.0" bottom="10.0" left="16.0"/></padding>
+            <Button fx:id="btnVolver"    text="← Volver"    onAction="#onVolverClick"/>
+            <Button fx:id="btnContinuar" text="Continuar →" onAction="#onContinuarClick"
+                    style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 13px;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

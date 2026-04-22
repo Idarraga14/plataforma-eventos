@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class Compra {
-    private String idCompra;
-    private Usuario usuario;
-    private Evento evento;
-    private LocalDateTime fecha;
+    private final String idCompra;
+    private final Usuario usuario;
+    private final Evento evento;
+    private final LocalDateTime fecha;
     private double total;
     private CompraState estadoActual;
-    private List<Entrada> entradas;
+    private final List<Entrada> entradas;
 
     public Compra(Usuario usuario, Evento evento) {
         this.idCompra = UUID.randomUUID().toString();

@@ -1,6 +1,5 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.domain.model;
 
-import co.edu.uniquindio.pgii.plataforma_eventos.domain.builder.EventoBuilder;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 
@@ -10,15 +9,15 @@ import java.util.List;
 import java.util.UUID;
 
 public class Evento {
-    private String idEvento;
-    private String nombre;
-    private EventoCategoria categoria;
-    private String descripcion;
-    private String ciudad;
-    private LocalDateTime fecha;
-    private EventoEstado estado;
-    private List<String> politicas;
-    private Recinto recinto;
+    private final String idEvento;
+    private final String nombre;
+    private final EventoCategoria categoria;
+    private final String descripcion;
+    private final String ciudad;
+    private final LocalDateTime fecha;
+    private final EventoEstado estado;
+    private final List<String> politicas;
+    private final Recinto recinto;
 
     private Evento(EventoBuilder builder) {
         this.idEvento = UUID.randomUUID().toString();
