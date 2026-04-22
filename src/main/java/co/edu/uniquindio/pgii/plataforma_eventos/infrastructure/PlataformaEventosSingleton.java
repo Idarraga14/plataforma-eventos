@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class PlataformaEventos {
+public class PlataformaEventosSingleton {
     // La única instancia de la clase
-    private static final PlataformaEventos instance = new PlataformaEventos();
+    private static final PlataformaEventosSingleton instance = new PlataformaEventosSingleton();
 
     // Colecciones en memoria
     private List<Usuario> usuarios = new ArrayList<>();
@@ -25,12 +25,12 @@ public class PlataformaEventos {
 
     private List<EventoObserver> observadores = new ArrayList<>();
 
-    private PlataformaEventos() {
+    private PlataformaEventosSingleton() {
         // RF-045: Ejecutamos la carga de datos inicial
         inicializarDatosDePrueba();
     }
 
-    public static PlataformaEventos getInstance() {
+    public static PlataformaEventosSingleton getInstance() {
         return instance;
     }
 

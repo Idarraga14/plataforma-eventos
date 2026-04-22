@@ -5,7 +5,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.EntradaZona;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
-import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.PlataformaEventos;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.PlataformaEventosSingleton;
 
 public class AsignacionPorZonaStrategy implements AsignacionStrategy {
     @Override
@@ -17,7 +17,7 @@ public class AsignacionPorZonaStrategy implements AsignacionStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("Zona no encontrada en el evento"));
 
         // 2. Calculamos el aforo actual consultando el Singleton
-        long entradasVendidas = PlataformaEventos.getInstance().getCompras().stream()
+        long entradasVendidas = PlataformaEventosSingleton.getInstance().getCompras().stream()
                 .filter(compra -> compra.getEvento().getIdEvento().equals(evento.getIdEvento()))
                 .flatMap(compra -> compra.getEntradas().stream())
                 .filter(entrada -> entrada instanceof EntradaZona &&

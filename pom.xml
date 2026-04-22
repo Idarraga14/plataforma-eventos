@@ -61,7 +61,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                co.edu.uniquindio.pgii.plataforma_eventos/co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.HelloApplication
+                                co.edu.uniquindio.pgii.plataforma_eventos/co.edu.uniquindio.pgii.plataforma_eventos.ui.Launcher
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>

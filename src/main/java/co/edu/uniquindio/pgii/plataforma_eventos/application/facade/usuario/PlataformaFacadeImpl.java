@@ -11,7 +11,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
-import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.PlataformaEventos;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.PlataformaEventosSingleton;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.ProcesadorPago;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.SimuladorPagoAdapter;
 
@@ -19,7 +19,7 @@ import java.util.List;
 
 public class PlataformaFacadeImpl implements PlataformaFacade {
 
-    private PlataformaEventos plat = PlataformaEventos.getInstance();
+    private PlataformaEventosSingleton plat = PlataformaEventosSingleton.getInstance();
     private ProcesadorPago pasarela = new SimuladorPagoAdapter();
 
     @Override

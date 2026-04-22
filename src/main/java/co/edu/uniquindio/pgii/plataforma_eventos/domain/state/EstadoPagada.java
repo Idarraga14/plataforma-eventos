@@ -18,9 +18,6 @@ public class EstadoPagada extends CompraState {
     public void reembolsar() {
         System.out.println("Conectando con pasarela para devolver el dinero...");
         compra.setEstado(new EstadoReembolsada(compra));
-
-        // Regla de negocio crítica:
-        compra.liberarEntradas();
     }
 
     @Override

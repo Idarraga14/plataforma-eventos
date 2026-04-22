@@ -20,9 +20,6 @@ public class EstadoCreada extends CompraState {
     public void cancelar() {
         System.out.println("Compra cancelada por el usuario antes de pagar.");
         compra.setEstado(new EstadoCancelada(compra));
-
-        // Aquí iría la lógica para liberar las sillas reservadas en el carrito
-        compra.liberarEntradas();
     }
 
 

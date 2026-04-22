@@ -2,11 +2,9 @@ module co.edu.uniquindio.pgii.plataforma_eventos {
     requires javafx.controls;
     requires javafx.fxml;
 
-    opens co.edu.uniquindio.pgii.plataforma_eventos to javafx.fxml;
-
-    // Controladores existentes
+    // Clase principal de la aplicación (JavaFX Application)
     exports co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers;
-    opens co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers to javafx.fxml;
+    opens co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers to javafx.fxml, javafx.graphics;
 
     // Controladores de perfil Usuario
     exports co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario;
