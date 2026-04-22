@@ -1,5 +1,6 @@
-package co.edu.uniquindio.pgii.plataforma_eventos;
+package co.edu.uniquindio.pgii.plataforma_eventos.ui;
 
+import co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.HelloApplication;
 import javafx.application.Application;
 
 public class Launcher {

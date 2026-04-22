@@ -1,4 +1,4 @@
-package co.edu.uniquindio.pgii.plataforma_eventos;
+package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
