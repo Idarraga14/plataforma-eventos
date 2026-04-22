@@ -1,4 +1,33 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.domain.state;
 
-public class EstadoCreada {
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
+
+public class EstadoCreada extends CompraState {
+
+    public EstadoCreada(Compra compra) {
+        super(compra);
+    }
+
+    @Override
+    public void pagar() {
+        // Lógica de transición permitida
+        System.out.println("Procesando pago... Pago exitoso.");
+        compra.setEstado(new EstadoPagada(compra)); // Transición de estado
+    }
+
+    @Override
+    public void cancelar() {
+        System.out.println("Compra cancelada por el usuario antes de pagar.");
+        compra.setEstado(new EstadoCancelada(compra));
+
+        // Aquí iría la lógica para liberar las sillas reservadas en el carrito
+        compra.liberarEntradas();
+    }
+
+
+    @Override
+    public CompraEstado getEstadoEnum() {
+        return CompraEstado.CREADA;
+    }
 }
