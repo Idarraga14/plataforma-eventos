@@ -1,5 +1,6 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario;
 
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
 
@@ -15,10 +16,25 @@ public interface PlataformaFacade {
 
     int obtenerCuposDisponibles(String idEvento, String idZona);
 
-    double cotizarTotal(String idEvento, String idZona, int cantidadEntradas, List<String> extras);
+    /**
+     * Crea una orden de compra en estado CREADA: asigna asientos (BLOQUEADO) o
+     * reserva cupo por zona, aplica decoradores y calcula el total. No procesa pago.
+     *
+     * @param idAsientos lista de asientos a reservar; vacía si es modo zona general.
+     * @param cantidad   número de entradas para zona general (ignorado si hay asientos).
+     */
+    Compra crearOrdenCompra(String idUsuario, String idEvento, String idZona,
+                            List<String> idAsientos, int cantidad, List<String> extras);
 
-    // Proceso principal que usa Strategy, Factory, State y Adapter
-    void realizarCompra(String idUsuario, String idEvento, String idZona,
-                        String idAsiento, List<String> extras,
-                        String numTarjeta, String cvv);
+    /**
+     * Procesa el pago de una orden CREADA. Si el banco aprueba, transita a PAGADA
+     * y marca los asientos como VENDIDO. Si rechaza, la orden pasa a CANCELADA y
+     * se liberan los asientos.
+     */
+    void procesarPagoOrden(String idCompra, String numTarjeta, String cvv);
+
+    /** Cancela una orden CREADA y libera los recursos asociados. */
+    void cancelarOrdenCompra(String idCompra);
+
+    Compra buscarCompra(String idCompra);
 }

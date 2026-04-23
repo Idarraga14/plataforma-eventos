@@ -15,11 +15,22 @@ public abstract class EntradaDecorator extends Entrada {
 
     @Override
     public double getPrecioTotal() {
+        // Delega la responsabilidad a la capa inferior
         return entradaEnvuelta.getPrecioTotal();
     }
 
     @Override
     public String getDescripcionServicios() {
         return entradaEnvuelta.getDescripcionServicios();
+    }
+
+    @Override
+    public void confirmarVenta() {
+        entradaEnvuelta.confirmarVenta();
+    }
+
+    @Override
+    public void liberarRecursos() {
+        entradaEnvuelta.liberarRecursos();
     }
 }

@@ -28,8 +28,9 @@ public class AsignacionPorAsientoStrategy implements AsignacionStrategy {
             throw new IllegalStateException("El asiento ya ha sido reservado o vendido.");
         }
 
-        // 4. Mutamos el estado físico (El patrón protege la concurrencia a nivel de objeto)
-        asientoDestino.ocupar();
+        // 4. Bloqueamos el asiento mientras el usuario termina el flujo de pago.
+        //    La transición a VENDIDO ocurre solo cuando el pago es aprobado.
+        asientoDestino.setEstado(AsientoEstado.BLOQUEADO);
 
         // 5. Retornamos la entrada vinculada a la silla
         return EntradaFactory.fabricar(zonaDestino, asientoDestino);

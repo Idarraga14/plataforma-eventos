@@ -13,4 +13,16 @@ public class MedioPago {
         // Solo guardamos los últimos 4 dígitos por "seguridad" simulada
         this.ultimosCuatroDigitos = numeroTarjeta.substring(numeroTarjeta.length() - 4);
     }
+
+    public String getIdMedioPago() {
+        return idMedioPago;
+    }
+
+    public String getTitular() {
+        return titular;
+    }
+
+    public String getUltimosCuatro() {
+        return ultimosCuatroDigitos;
+    }
 }

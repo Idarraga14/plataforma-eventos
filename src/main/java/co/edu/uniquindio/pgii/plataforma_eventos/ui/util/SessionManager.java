@@ -1,6 +1,7 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.ui.util;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Asiento;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
@@ -16,7 +17,7 @@ public class SessionManager {
     private Zona zonaSeleccionadaTemporal;
     private List<Asiento> asientosSeleccionadosTemporales = new ArrayList<>();
     private int cantidadEntradasZonaTemporal = 1;
-    private List<String> extrasSeleccionados = new ArrayList<>();
+    private Compra ordenActual;
 
     private SessionManager() {
     }
@@ -76,11 +77,15 @@ public class SessionManager {
         return cantidadEntradasZonaTemporal;
     }
 
-    public void setExtrasSeleccionados(List<String> extras) {
-        this.extrasSeleccionados = extras;
+    public void setOrdenActual(Compra ordenActual) {
+        this.ordenActual = ordenActual;
     }
 
-    public List<String> getExtrasSeleccionados() {
-        return extrasSeleccionados;
+    public Compra getOrdenActual() {
+        return ordenActual;
+    }
+
+    public void limpiarOrdenActual() {
+        this.ordenActual = null;
     }
 }

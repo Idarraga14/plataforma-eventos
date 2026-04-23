@@ -22,4 +22,24 @@ public abstract class Entrada {
     public String getDescripcionServicios() {
         return "Entrada estándar";
     }
+
+    public String getIdEntrada() {
+        return idEntrada;
+    }
+
+    public EntradaEstado getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EntradaEstado estado) {
+        this.estado = estado;
+    }
+
+    /** Marca como vendidos los recursos físicos asociados (asientos). Default: nada. */
+    public void confirmarVenta() {
+    }
+
+    /** Libera los recursos físicos asociados (asientos) dejándolos DISPONIBLES. Default: nada. */
+    public void liberarRecursos() {
+    }
 }

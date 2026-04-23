@@ -1,6 +1,5 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario;
 
-import co.edu.uniquindio.pgii.plataforma_eventos.application.factory.EntradaFactory;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionPorAsientoStrategy;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionPorZonaStrategy;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionStrategy;
@@ -8,7 +7,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDeco
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
-import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
@@ -21,6 +19,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.Procesad
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.SimuladorPagoAdapter;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class PlataformaFacadeImpl implements PlataformaFacade {
 
@@ -28,50 +27,89 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
     private final ProcesadorPago pasarela = new SimuladorPagoAdapter();
 
     @Override
-    public void realizarCompra(String idUsuario, String idEvento, String idZona, String idAsiento,
-                               List<String> extras, String numTarjeta, String cvv) {
+    public Compra crearOrdenCompra(String idUsuario, String idEvento, String idZona,
+                                   List<String> idAsientos, int cantidad, List<String> extras) {
         // 1. Recuperar entidades
         Usuario usuario = plat.buscarUsuario(idUsuario);
         Evento evento = plat.buscarEvento(idEvento);
 
-        // 2. Definir Estrategia de Asignación (STRATEGY)
-        // Aquí podrías tener un selector de estrategia basado en el tipo de evento
-        AsignacionStrategy motor = (evento.getCategoria() == EventoCategoria.CONCIERTO)
-                ? new AsignacionPorZonaStrategy()
-                : new AsignacionPorAsientoStrategy();
+        // 2. Crear la Compra (arranca en EstadoCreada por default)
+        Compra orden = new Compra(usuario, evento);
 
-        // 3. Intentar asignar cupo y fabricar entrada (STRATEGY + FACTORY)
-        Entrada ticket = motor.asignarCupo(evento, idZona, idAsiento);
+        // 3. Elegir STRATEGY según haya asientos específicos o no
+        boolean modoAsiento = idAsientos != null && !idAsientos.isEmpty();
+        AsignacionStrategy motor = modoAsiento
+                ? new AsignacionPorAsientoStrategy()
+                : new AsignacionPorZonaStrategy();
 
-        // 4. Aplicar servicios adicionales (DECORATOR)
-        for (String extra : extras) {
-            if (extra.equals("VIP")) ticket = new PaqueteVIPDecorator(ticket);
-            if (extra.equals("SEGURO")) ticket = new SeguroCancelacionDecorator(ticket, 10000.0);
-            if (extra.equals("PARQUEADERO")) ticket = new ParqueaderoDecorator(ticket);
+        try {
+            if (modoAsiento) {
+                for (String idAsiento : idAsientos) {
+                    Entrada ticket = motor.asignarCupo(evento, idZona, idAsiento);
+                    ticket = aplicarExtras(ticket, extras);
+                    orden.agregarEntrada(ticket);
+                }
+            } else {
+                int n = Math.max(1, cantidad);
+                for (int i = 0; i < n; i++) {
+                    Entrada ticket = motor.asignarCupo(evento, idZona, null);
+                    ticket = aplicarExtras(ticket, extras);
+                    orden.agregarEntrada(ticket);
+                }
+            }
+        } catch (RuntimeException ex) {
+            // Si algo falla a mitad de la asignación, liberamos lo que ya se bloqueó
+            orden.getEntradas().forEach(Entrada::liberarRecursos);
+            throw ex;
         }
 
-        // 5. Crear la Compra en estado inicial (STATE)
-        Compra nuevaCompra = new Compra(usuario, evento);
-        nuevaCompra.agregarEntrada(ticket);
-        nuevaCompra.calcularTotal();
+        orden.calcularTotal();
+        plat.getCompras().add(orden);
+        return orden;
+    }
 
-        // 6. Procesar Pago (ADAPTER)
-        boolean pagoExitoso = pasarela.procesarPago(nuevaCompra, numTarjeta, cvv);
+    @Override
+    public void procesarPagoOrden(String idCompra, String numTarjeta, String cvv) {
+        Compra orden = buscarCompra(idCompra);
+        if (orden.getEstadoEnum() != CompraEstado.CREADA) {
+            throw new IllegalStateException("La orden ya no está en estado CREADA.");
+        }
+
+        boolean pagoExitoso = pasarela.procesarPago(orden, numTarjeta, cvv);
 
         if (pagoExitoso) {
-            nuevaCompra.pagar(); // Cambia de CREADA a PAGADA vía STATE
-            plat.getCompras().add(nuevaCompra);
-
-            // 7. Notificar a la UI (OBSERVER)
-            plat.notificarCambio(evento);
+            orden.pagar(); // STATE: CREADA -> PAGADA
+            // Consolidar la venta de los asientos físicos bloqueados
+            orden.getEntradas().forEach(Entrada::confirmarVenta);
+            plat.notificarCambio(orden.getEvento());
         } else {
+            // El banco rechazó: cancelamos la orden y liberamos recursos
+            orden.cancelar(); // STATE: CREADA -> CANCELADA
+            orden.getEntradas().forEach(Entrada::liberarRecursos);
+            plat.notificarCambio(orden.getEvento());
             throw new RuntimeException("Pago rechazado por el banco.");
         }
     }
 
     @Override
+    public void cancelarOrdenCompra(String idCompra) {
+        Compra orden = buscarCompra(idCompra);
+        orden.cancelar(); // STATE delega en el estado actual; lanza si no se permite
+        orden.getEntradas().forEach(Entrada::liberarRecursos);
+        plat.notificarCambio(orden.getEvento());
+    }
+
+    @Override
+    public Compra buscarCompra(String idCompra) {
+        return plat.getCompras().stream()
+                .filter(c -> c.getIdCompra().equals(idCompra))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Compra no encontrada: " + idCompra));
+    }
+
+    @Override
     public List<Evento> obtenerEventosDisponibles() {
-        return PlataformaEventosSingleton.getInstance().getEventos().stream()
+        return plat.getEventos().stream()
                 .filter(evento -> evento.getEstado() == EventoEstado.PUBLICADO)
                 .toList();
     }
@@ -85,31 +123,21 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
                 .findFirst()
                 .orElseThrow();
 
-        // 2. Contamos cuántas entradas se han vendido realmente
-        long entradasVendidas = plat.getCompras().stream()
-                // Filtramos las compras de este evento
+        // 2. Contamos entradas activas (CREADA/PAGADA/CONFIRMADA reservan cupo)
+        long entradasOcupadas = plat.getCompras().stream()
                 .filter(c -> c.getEvento().getIdEvento().equals(idEvento))
-                // REGLA CLAVE: No contamos las compras canceladas o devueltas
-                .filter(c -> c.getEstadoEnum() != CompraEstado.CANCELADA && c.getEstadoEnum() != CompraEstado.REEMBOLSADA)
-                // Extraemos todas las entradas de esas compras
+                .filter(c -> c.getEstadoEnum() != CompraEstado.CANCELADA
+                        && c.getEstadoEnum() != CompraEstado.REEMBOLSADA)
                 .flatMap(c -> c.getEntradas().stream())
-                // Filtramos solo las que pertenecen a la zona que estamos consultando
                 .filter(e -> e instanceof EntradaZona && ((EntradaZona) e).getZona().getIdZona().equals(idZona))
                 .count();
 
-        // 3. Retornamos la resta matemática
-        return (int) (zona.getCapacidad() - entradasVendidas);
-    }
-
-    @Override
-    public double cotizarTotal(String idEvento, String idZona, int cantidadEntradas, List<String> extras) {
-
-        return 0;
+        return (int) (zona.getCapacidad() - entradasOcupadas);
     }
 
     @Override
     public Usuario login(String correo, String password) {
-        return PlataformaEventosSingleton.getInstance().getUsuarios().stream()
+        return plat.getUsuarios().stream()
                 .filter(u -> u.getCorreo().equals(correo) && u.getPassword().equals(password))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Correo o contraseña incorrectos."));
@@ -118,5 +146,19 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
     @Override
     public void actualizarPerfil(Usuario usuario) {
 
+    }
+
+    // --- Helpers privados ---
+
+    private Entrada aplicarExtras(Entrada ticket, List<String> extras) {
+        if (extras == null) return ticket;
+        for (String extra : extras) {
+            switch (extra) {
+                case "VIP"                 -> ticket = new PaqueteVIPDecorator(ticket);
+                case "SEGURO_CANCELACION"  -> ticket = new SeguroCancelacionDecorator(ticket, 30_000.0);
+                case "PARQUEADERO"         -> ticket = new ParqueaderoDecorator(ticket);
+            }
+        }
+        return ticket;
     }
 }

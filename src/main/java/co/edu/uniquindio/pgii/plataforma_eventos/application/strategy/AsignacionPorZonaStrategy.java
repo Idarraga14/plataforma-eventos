@@ -1,6 +1,7 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.application.strategy;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.factory.EntradaFactory;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.EntradaZona;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
@@ -16,9 +17,12 @@ public class AsignacionPorZonaStrategy implements AsignacionStrategy {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Zona no encontrada en el evento"));
 
-        // 2. Calculamos el aforo actual consultando el Singleton
+        // 2. Calculamos el aforo actual consultando el Singleton.
+        //    Las órdenes CREADA/PAGADA/CONFIRMADA reservan cupo; las CANCELADA/REEMBOLSADA no.
         long entradasVendidas = PlataformaEventosSingleton.getInstance().getCompras().stream()
                 .filter(compra -> compra.getEvento().getIdEvento().equals(evento.getIdEvento()))
+                .filter(compra -> compra.getEstadoEnum() != CompraEstado.CANCELADA
+                        && compra.getEstadoEnum() != CompraEstado.REEMBOLSADA)
                 .flatMap(compra -> compra.getEntradas().stream())
                 .filter(entrada -> entrada instanceof EntradaZona &&
                         ((EntradaZona) entrada).getZona().getIdZona().equals(idZona))
