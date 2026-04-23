@@ -75,9 +75,10 @@ public class DatosPruebaSeeder {
         // --- Recinto A: Estadio Monumental — 3 zonas de flujo libre (sin asientos numerados) ---
         Recinto estadio = new Recinto("Estadio Monumental", "Av. Centenario # 100-00", "Bogotá");
 
-        Zona canchGeneral = new Zona("Cancha General",       25_000,  75_000.0);
-        Zona tribunaPref  = new Zona("Tribuna Preferencial",  8_000, 180_000.0);
-        Zona palcoVIP     = new Zona("Palco Platinum VIP",      500, 550_000.0);
+        // Capacidades dimensionadas para el volumen del seeder (~5/15, ~4/10, ~3/8 → 33-40%)
+        Zona canchGeneral = new Zona("Cancha General",       15,  75_000.0);
+        Zona tribunaPref  = new Zona("Tribuna Preferencial", 10, 180_000.0);
+        Zona palcoVIP     = new Zona("Palco Platinum VIP",    8, 550_000.0);
 
         estadio.getZonas().add(canchGeneral);
         estadio.getZonas().add(tribunaPref);
@@ -171,7 +172,7 @@ public class DatosPruebaSeeder {
                 .conDescripcion("Reunión de líderes tecnológicos del país. Networking y workshops. [FINALIZADO]")
                 .deCategoria(EventoCategoria.CONFERENCIA)
                 .enCiudad("Bogotá")
-                .paraLaFecha(LocalDateTime.now().minusDays(30))
+                .paraLaFecha(LocalDateTime.now().plusDays(2))
                 .enRecinto(estadio)
                 .build();
         conferD.setEstado(EventoEstado.FINALIZADO);
