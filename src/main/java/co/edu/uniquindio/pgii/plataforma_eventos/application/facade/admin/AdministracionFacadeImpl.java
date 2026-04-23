@@ -318,6 +318,42 @@ public class AdministracionFacadeImpl implements AdministracionFacade {
                 .orElseThrow(() -> new NoSuchElementException("Recinto no encontrado: " + id));
     }
 
+    @Override
+    public void reasignarAsiento(String idCompra, String idAsientoAntiguo, String idAsientoNuevo) {
+        Compra compra = buscarCompra(idCompra);
+        if (compra.getEstadoEnum() != CompraEstado.PAGADA
+                && compra.getEstadoEnum() != CompraEstado.CONFIRMADA) {
+            throw new IllegalStateException("Solo se puede reasignar en compras PAGADAS o CONFIRMADAS.");
+        }
+
+        Evento evento = compra.getEvento();
+
+        // Buscar la EntradaAsiento base que corresponde al asiento antiguo
+        EntradaAsiento entradaBase = compra.getEntradas().stream()
+                .map(AdministracionFacadeImpl::unwrapEntradaAsiento)
+                .filter(ea -> ea != null
+                        && ea.getAsientoEvento().getIdAsiento().equals(idAsientoAntiguo))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException(
+                        "No se encontró una entrada para el asiento: " + idAsientoAntiguo));
+
+        AsientoEvento aeAntiguo = evento.obtenerAsientoEvento(idAsientoAntiguo);
+        AsientoEvento aeNuevo   = evento.obtenerAsientoEvento(idAsientoNuevo);
+
+        if (aeNuevo.getEstado() != AsientoEstado.DISPONIBLE) {
+            throw new IllegalStateException("El asiento destino no está disponible.");
+        }
+
+        // Liberar el antiguo y ocupar el nuevo
+        aeAntiguo.setEstado(AsientoEstado.DISPONIBLE);
+        aeNuevo.setEstado(AsientoEstado.VENDIDO);
+
+        // Actualizar la referencia interna de la entrada
+        entradaBase.reasignarA(aeNuevo);
+
+        plat.notificarCambio(evento);
+    }
+
     private Asiento buscarAsiento(String idAsiento) {
         for (Recinto r : plat.getRecintos()) {
             for (Zona z : r.getZonas()) {
@@ -334,6 +370,14 @@ public class AdministracionFacadeImpl implements AdministracionFacade {
                 .filter(c -> c.getIdCompra().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Compra no encontrada: " + id));
+    }
+
+    private static EntradaAsiento unwrapEntradaAsiento(Entrada e) {
+        Entrada actual = e;
+        while (actual instanceof co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.EntradaDecorator d) {
+            actual = d.getEntradaEnvuelta();
+        }
+        return (actual instanceof EntradaAsiento ea) ? ea : null;
     }
 
     private static Zona zonaDeEntrada(Entrada e) {

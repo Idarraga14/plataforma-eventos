@@ -2,8 +2,12 @@ package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.admin;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.admin.AdministracionFacade;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.admin.AdministracionFacadeImpl;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.AsientoEvento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.EntradaAsiento;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,8 +18,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -96,7 +102,70 @@ public class AdminComprasController implements Initializable {
 
     @FXML
     public void onReasignarAsientoClick(ActionEvent event) {
-        mostrarInfo("La reasignación de asientos estará disponible en una próxima versión.");
+        Compra sel = tblCompras.getSelectionModel().getSelectedItem();
+        if (sel == null) { mostrarError("Selecciona una compra."); return; }
+        if (sel.getEstadoEnum() != CompraEstado.PAGADA && sel.getEstadoEnum() != CompraEstado.CONFIRMADA) {
+            mostrarError("Solo se pueden reasignar asientos en compras PAGADAS o CONFIRMADAS.");
+            return;
+        }
+
+        // Recolectar asientos actuales de la compra (entradas con asiento numerado)
+        List<String> asientosActuales = sel.getEntradas().stream()
+                .map(AdminComprasController::unwrapAsientoId)
+                .filter(id -> id != null)
+                .toList();
+
+        if (asientosActuales.isEmpty()) {
+            mostrarInfo("Esta compra no tiene entradas con asiento numerado.");
+            return;
+        }
+
+        // Paso 1: elegir el asiento a reasignar
+        ChoiceDialog<String> dlgAntiguo = new ChoiceDialog<>(asientosActuales.get(0), asientosActuales);
+        dlgAntiguo.setTitle("Reasignar Asiento");
+        dlgAntiguo.setHeaderText("Selecciona el asiento actual a cambiar:");
+        dlgAntiguo.setContentText("Asiento:");
+        Optional<String> idAntiguo = dlgAntiguo.showAndWait();
+        if (idAntiguo.isEmpty()) return;
+
+        // Paso 2: elegir el nuevo asiento (disponibles en la misma zona del evento)
+        List<String> disponibles = sel.getEvento().getRecinto().getZonas().stream()
+                .flatMap(z -> sel.getEvento().getInventarioDe(z).stream())
+                .filter(ae -> ae.getEstado() == AsientoEstado.DISPONIBLE)
+                .map(ae -> ae.getAsientoFisico().getSalida() + " [" + ae.getIdAsiento() + "]")
+                .toList();
+
+        if (disponibles.isEmpty()) {
+            mostrarInfo("No hay asientos disponibles en este evento.");
+            return;
+        }
+
+        ChoiceDialog<String> dlgNuevo = new ChoiceDialog<>(disponibles.get(0), disponibles);
+        dlgNuevo.setTitle("Reasignar Asiento");
+        dlgNuevo.setHeaderText("Selecciona el nuevo asiento:");
+        dlgNuevo.setContentText("Asiento destino:");
+        Optional<String> selNuevo = dlgNuevo.showAndWait();
+        if (selNuevo.isEmpty()) return;
+
+        // Extraer el idAsiento del formato "Etiqueta [uuid]"
+        String idNuevo = selNuevo.get().replaceAll(".*\\[(.+)]", "$1");
+
+        try {
+            administracionFacade.reasignarAsiento(sel.getIdCompra(), idAntiguo.get(), idNuevo);
+            mostrarInfo("Asiento reasignado correctamente.");
+            cargarCompras();
+        } catch (RuntimeException ex) {
+            mostrarError(ex.getMessage());
+        }
+    }
+
+    private static String unwrapAsientoId(co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada e) {
+        co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada actual = e;
+        while (actual instanceof co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.EntradaDecorator d) {
+            actual = d.getEntradaEnvuelta();
+        }
+        if (actual instanceof EntradaAsiento ea) return ea.getAsientoEvento().getIdAsiento();
+        return null;
     }
 
     @FXML
@@ -126,6 +195,7 @@ public class AdminComprasController implements Initializable {
     @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
     @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
     @FXML public void onNavCompras(ActionEvent e) { }
+    @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
     @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
     @FXML public void onCerrarSesion(ActionEvent e) {
         SessionManager.getInstance().logout();

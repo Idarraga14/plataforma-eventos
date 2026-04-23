@@ -67,6 +67,7 @@ public class AdminDashboardController implements Initializable, EventoObserver {
     @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
     @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
     @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
+    @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
     @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
     @FXML public void onCerrarSesion(ActionEvent e) {
         co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager.getInstance().logout();

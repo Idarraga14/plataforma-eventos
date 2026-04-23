@@ -45,6 +45,9 @@ public interface AdministracionFacade {
     void bloquearAsientoEnEvento(String idEvento, String idAsiento);
     void habilitarAsientoEnEvento(String idEvento, String idAsiento);
 
+    // RF-016: Reasignación de asiento dentro de una compra pagada/confirmada
+    void reasignarAsiento(String idCompra, String idAsientoAntiguo, String idAsientoNuevo);
+
     // === COMPRAS ===
     List<Compra> listarCompras();
     void reembolsarCompra(String idCompra);
