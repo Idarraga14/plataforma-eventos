@@ -1,9 +1,12 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.application.facade.admin;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.observer.EventoObserver;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.AccesoPreferencialDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.MerchandisingDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.ReporteOperativo;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.AsientoEvento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
@@ -26,10 +29,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 public class AdministracionFacadeImpl implements AdministracionFacade {
 
@@ -270,21 +275,88 @@ public class AdministracionFacadeImpl implements AdministracionFacade {
 
     @Override
     public Map<String, Double> ingresosPorServicioAdicional() {
-        double vip = 0, seguro = 0, parqueadero = 0;
+        double vip = 0, seguro = 0, parqueadero = 0, merchandising = 0, acceso = 0;
         for (Compra c : plat.getCompras()) {
             if (c.getEstadoEnum() != CompraEstado.PAGADA
                     && c.getEstadoEnum() != CompraEstado.CONFIRMADA) continue;
             for (Entrada e : c.getEntradas()) {
-                if (contienePaqueteVIP(e))      vip += PaqueteVIPDecorator.COSTO;
-                if (contieneSeguro(e))          seguro += SeguroCancelacionDecorator.COSTO_DEFAULT;
+                if (contienePaqueteVIP(e))      vip         += PaqueteVIPDecorator.COSTO;
+                if (contieneSeguro(e))          seguro      += SeguroCancelacionDecorator.COSTO_DEFAULT;
                 if (contieneParqueadero(e))     parqueadero += ParqueaderoDecorator.COSTO;
+                if (contieneMerchandising(e))   merchandising += MerchandisingDecorator.COSTO;
+                if (contieneAccesoPreferencial(e)) acceso   += AccesoPreferencialDecorator.COSTO;
             }
         }
         Map<String, Double> m = new LinkedHashMap<>();
         m.put("VIP", vip);
         m.put("Seguro", seguro);
         m.put("Parqueadero", parqueadero);
+        m.put("Merchandising", merchandising);
+        m.put("Acceso Preferencial", acceso);
         return m;
+    }
+
+    @Override
+    public ReporteOperativo generarReporteOperativo(LocalDate desde, LocalDate hasta) {
+        List<Compra> enPeriodo = plat.getCompras().stream()
+                .filter(c -> {
+                    LocalDate f = c.getFecha().toLocalDate();
+                    return (desde == null || !f.isBefore(desde))
+                            && (hasta == null || !f.isAfter(hasta));
+                })
+                .toList();
+
+        int totalCompras = enPeriodo.size();
+
+        int canceladas = (int) enPeriodo.stream()
+                .filter(c -> c.getEstadoEnum() == CompraEstado.CANCELADA
+                        || c.getEstadoEnum() == CompraEstado.REEMBOLSADA)
+                .count();
+
+        double totalVentas = enPeriodo.stream()
+                .filter(c -> c.getEstadoEnum() == CompraEstado.PAGADA
+                        || c.getEstadoEnum() == CompraEstado.CONFIRMADA)
+                .mapToDouble(Compra::getTotal)
+                .sum();
+
+        double tasaCancelacion = totalCompras == 0 ? 0.0 : (100.0 * canceladas / totalCompras);
+
+        // Ingresos por extra (solo compras PAGADA/CONFIRMADA en el período)
+        Map<String, Double> extras = new LinkedHashMap<>();
+        extras.put("VIP", 0.0);
+        extras.put("Seguro", 0.0);
+        extras.put("Parqueadero", 0.0);
+        extras.put("Merchandising", 0.0);
+        extras.put("Acceso Preferencial", 0.0);
+        for (Compra c : enPeriodo) {
+            if (c.getEstadoEnum() != CompraEstado.PAGADA
+                    && c.getEstadoEnum() != CompraEstado.CONFIRMADA) continue;
+            for (Entrada e : c.getEntradas()) {
+                if (contienePaqueteVIP(e))         extras.merge("VIP", PaqueteVIPDecorator.COSTO, Double::sum);
+                if (contieneSeguro(e))             extras.merge("Seguro", SeguroCancelacionDecorator.COSTO_DEFAULT, Double::sum);
+                if (contieneParqueadero(e))        extras.merge("Parqueadero", ParqueaderoDecorator.COSTO, Double::sum);
+                if (contieneMerchandising(e))      extras.merge("Merchandising", MerchandisingDecorator.COSTO, Double::sum);
+                if (contieneAccesoPreferencial(e)) extras.merge("Acceso Preferencial", AccesoPreferencialDecorator.COSTO, Double::sum);
+            }
+        }
+
+        // Top eventos por ventas (desc)
+        Map<String, Double> topEventos = enPeriodo.stream()
+                .filter(c -> c.getEstadoEnum() == CompraEstado.PAGADA
+                        || c.getEstadoEnum() == CompraEstado.CONFIRMADA)
+                .collect(Collectors.groupingBy(
+                        c -> c.getEvento().getNombre(),
+                        Collectors.summingDouble(Compra::getTotal)))
+                .entrySet().stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (a, b) -> a,
+                        LinkedHashMap::new));
+
+        return new ReporteOperativo(desde, hasta, totalVentas, totalCompras, canceladas,
+                tasaCancelacion, extras, topEventos);
     }
 
     @Override
@@ -400,6 +472,14 @@ public class AdministracionFacadeImpl implements AdministracionFacade {
 
     private static boolean contieneParqueadero(Entrada e) {
         return contieneDecorator(e, ParqueaderoDecorator.class);
+    }
+
+    private static boolean contieneMerchandising(Entrada e) {
+        return contieneDecorator(e, MerchandisingDecorator.class);
+    }
+
+    private static boolean contieneAccesoPreferencial(Entrada e) {
+        return contieneDecorator(e, AccesoPreferencialDecorator.class);
     }
 
     private static boolean contieneDecorator(Entrada e, Class<?> clazz) {

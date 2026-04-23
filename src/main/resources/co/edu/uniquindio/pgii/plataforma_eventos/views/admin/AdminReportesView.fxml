@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefWidth="1000.0" prefHeight="680.0"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.admin.AdminReportesController">
+
+    <!-- ═══ ENCABEZADO ═══ -->
+    <top>
+        <VBox style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;">
+            <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+            <HBox spacing="6.0" alignment="CENTER_LEFT">
+                <Button text="Dashboard"   onAction="#onNavDashboard"/>
+                <Button text="Eventos"     onAction="#onNavEventos"/>
+                <Button text="Recintos"    onAction="#onNavRecintos"/>
+                <Button text="Usuarios"    onAction="#onNavUsuarios"/>
+                <Button text="Compras"     onAction="#onNavCompras"/>
+                <Button text="Asientos"    onAction="#onNavAsientos"/>
+                <Button text="Reportes"    onAction="#onNavReportes" disable="true"
+                        style="-fx-background-color: #34495e; -fx-text-fill: white;"/>
+                <Button text="Incidencias" onAction="#onNavIncidencias"/>
+                <Button text="Cerrar sesión" onAction="#onCerrarSesion"
+                        style="-fx-background-color: #7f8c8d; -fx-text-fill: white;"/>
+                <padding><Insets bottom="8.0"/></padding>
+            </HBox>
+            <Label text="Reportes Operativos (RF-046)"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label text="Consulta métricas del sistema en un rango de fechas y exporta el reporte."
+                   style="-fx-text-fill: #7f8c8d;"/>
+        </VBox>
+    </top>
+
+    <!-- ═══ CONTENIDO CENTRAL ═══ -->
+    <center>
+        <VBox spacing="0.0">
+
+            <!-- ── Filtros de rango ── -->
+            <VBox spacing="12.0" style="-fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;">
+                <padding><Insets top="16.0" right="24.0" bottom="16.0" left="24.0"/></padding>
+                <Label text="Período de análisis"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <HBox spacing="16.0" alignment="CENTER_LEFT">
+                    <Label text="Desde:" style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dtpDesde" promptText="Fecha inicio"/>
+                    <Label text="Hasta:" style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dtpHasta" promptText="Fecha fin"/>
+                    <Button fx:id="btnConsultar" text="Consultar métricas"
+                            onAction="#onConsultarClick"
+                            style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+                    <Button fx:id="btnLimpiar" text="Limpiar"
+                            onAction="#onLimpiarClick"/>
+                </HBox>
+                <Label fx:id="lblMensaje" style="-fx-font-size: 12px;"
+                       visible="false" managed="false"/>
+            </VBox>
+
+            <Separator/>
+
+            <!-- ── Tarjetas de métricas ── -->
+            <VBox spacing="16.0">
+                <padding><Insets top="20.0" right="24.0" bottom="20.0" left="24.0"/></padding>
+                <Label text="Resumen del período"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                <HBox spacing="16.0">
+                    <!-- Tarjeta: Ventas -->
+                    <VBox spacing="4.0" style="-fx-background-color: #eafaf1; -fx-padding: 14; -fx-border-color: #27ae60; -fx-border-width: 1;" prefWidth="200.0">
+                        <Label text="Total Ventas ($)" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                        <Label fx:id="lblTotalVentas" text="—"
+                               style="-fx-text-fill: #27ae60; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Tarjeta: Compras -->
+                    <VBox spacing="4.0" style="-fx-background-color: #eaf4fb; -fx-padding: 14; -fx-border-color: #2980b9; -fx-border-width: 1;" prefWidth="200.0">
+                        <Label text="Total Compras" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                        <Label fx:id="lblTotalCompras" text="—"
+                               style="-fx-text-fill: #2980b9; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Tarjeta: Canceladas -->
+                    <VBox spacing="4.0" style="-fx-background-color: #fdedec; -fx-padding: 14; -fx-border-color: #e74c3c; -fx-border-width: 1;" prefWidth="200.0">
+                        <Label text="Canceladas/Reembolsadas" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                        <Label fx:id="lblCanceladas" text="—"
+                               style="-fx-text-fill: #e74c3c; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Tarjeta: Tasa Cancelación -->
+                    <VBox spacing="4.0" style="-fx-background-color: #fef9e7; -fx-padding: 14; -fx-border-color: #f39c12; -fx-border-width: 1;" prefWidth="200.0">
+                        <Label text="Tasa de Cancelación" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                        <Label fx:id="lblTasaCancelacion" text="—"
+                               style="-fx-text-fill: #f39c12; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+
+                <Separator/>
+
+                <!-- Detalle: Extras y Top Eventos -->
+                <HBox spacing="24.0">
+                    <!-- Ingresos por extra -->
+                    <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                        <Label text="Ingresos por Servicio Adicional (Extras)"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <GridPane hgap="20.0" vgap="6.0">
+                            <columnConstraints>
+                                <ColumnConstraints prefWidth="170.0"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <Label text="VIP:"               GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblExtraVIP"       GridPane.rowIndex="0" GridPane.columnIndex="1" text="—" style="-fx-font-weight: bold;"/>
+                            <Label text="Seguro:"            GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblExtraSeguro"    GridPane.rowIndex="1" GridPane.columnIndex="1" text="—" style="-fx-font-weight: bold;"/>
+                            <Label text="Parqueadero:"       GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblExtraParq"      GridPane.rowIndex="2" GridPane.columnIndex="1" text="—" style="-fx-font-weight: bold;"/>
+                            <Label text="Merchandising:"     GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblExtraMerch"     GridPane.rowIndex="3" GridPane.columnIndex="1" text="—" style="-fx-font-weight: bold;"/>
+                            <Label text="Acceso Preferencial:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblExtraAcceso"    GridPane.rowIndex="4" GridPane.columnIndex="1" text="—" style="-fx-font-weight: bold;"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- Top Eventos -->
+                    <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                        <Label text="Top Eventos por Ventas"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Label fx:id="lblTopEventos" text="—" wrapText="true"
+                               style="-fx-font-family: monospace; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+    </center>
+
+    <!-- ═══ PANEL INFERIOR: Exportar ═══ -->
+    <bottom>
+        <HBox spacing="12.0" alignment="CENTER_RIGHT">
+            <padding><Insets top="12.0" right="24.0" bottom="12.0" left="24.0"/></padding>
+            <Label text="Exportar reporte:" style="-fx-font-weight: bold;"/>
+            <Button fx:id="btnExportarCSV" text="Descargar CSV"
+                    onAction="#onExportarCSVClick"
+                    style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+            <Button fx:id="btnExportarPDF" text="Descargar PDF"
+                    onAction="#onExportarPDFClick"
+                    style="-fx-background-color: #8e44ad; -fx-text-fill: white;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -119,6 +119,7 @@ public class AdminUsuariosController implements Initializable {
     @FXML public void onNavUsuarios(ActionEvent e) { }
     @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
     @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
+    @FXML public void onNavReportes(ActionEvent e) { navegar("AdminReportesView.fxml"); }
     @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
     @FXML public void onCerrarSesion(ActionEvent e) {
         SessionManager.getInstance().logout();

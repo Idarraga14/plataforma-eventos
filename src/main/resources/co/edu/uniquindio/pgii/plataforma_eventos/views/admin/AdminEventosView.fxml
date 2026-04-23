@@ -32,6 +32,7 @@
                 <Button text="Usuarios"    onAction="#onNavUsuarios"/>
                 <Button text="Compras"     onAction="#onNavCompras"/>
                 <Button text="Asientos"    onAction="#onNavAsientos"/>
+                <Button text="Reportes"    onAction="#onNavReportes"/>
                 <Button text="Incidencias" onAction="#onNavIncidencias"/>
                 <Button text="Cerrar sesión" onAction="#onCerrarSesion"
                         style="-fx-background-color: #7f8c8d; -fx-text-fill: white;"/>

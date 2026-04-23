@@ -10,6 +10,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Incidencia;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Recinto;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.ReporteOperativo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -67,6 +68,9 @@ public interface AdministracionFacade {
     Map<String, Double> ingresosPorServicioAdicional();
     long contarUsuarios();
     long contarIncidenciasAbiertas();
+
+    // === REPORTES OPERATIVOS ===
+    ReporteOperativo generarReporteOperativo(LocalDate desde, LocalDate hasta);
 
     // === OBSERVER ===
     void registrarObserver(EventoObserver obs);
