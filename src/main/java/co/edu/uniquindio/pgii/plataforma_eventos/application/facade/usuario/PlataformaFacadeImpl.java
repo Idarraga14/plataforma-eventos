@@ -6,6 +6,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.Asignacion
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
@@ -126,10 +127,10 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
                 .findFirst()
                 .orElseThrow();
 
-        // Zonas con asientos físicos: contar asientos DISPONIBLES.
+        // Zonas con asientos físicos: consultar el inventario comercial del evento.
         if (!zona.getAsientos().isEmpty()) {
-            return (int) zona.getAsientos().stream()
-                    .filter(a -> a.getEstado() == co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado.DISPONIBLE)
+            return (int) evento.getInventarioDe(zona).stream()
+                    .filter(ae -> ae.getEstado() == AsientoEstado.DISPONIBLE)
                     .count();
         }
 

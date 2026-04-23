@@ -5,6 +5,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDec
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.AsientoEvento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
@@ -145,20 +146,32 @@ public class AdministracionFacadeImpl implements AdministracionFacade {
 
     @Override
     public void bloquearAsiento(String idAsiento) {
+        // Gestión física: marca la silla como fuera de servicio en el recinto
         Asiento a = buscarAsiento(idAsiento);
-        if (a.getEstado() == AsientoEstado.VENDIDO) {
-            throw new IllegalStateException("No se puede bloquear un asiento vendido.");
-        }
-        a.setEstado(AsientoEstado.BLOQUEADO);
+        a.setHabilitadoFisicamente(false);
     }
 
     @Override
     public void habilitarAsiento(String idAsiento) {
+        // Gestión física: devuelve la silla al servicio en el recinto
         Asiento a = buscarAsiento(idAsiento);
-        if (a.getEstado() != AsientoEstado.BLOQUEADO) {
-            throw new IllegalStateException("Sólo se pueden habilitar asientos bloqueados.");
-        }
-        a.setEstado(AsientoEstado.DISPONIBLE);
+        a.setHabilitadoFisicamente(true);
+    }
+
+    @Override
+    public void bloquearAsientoEnEvento(String idEvento, String idAsiento) {
+        // Gestión comercial: bloquea la silla solo para este evento
+        Evento evento = plat.buscarEvento(idEvento);
+        AsientoEvento ae = evento.obtenerAsientoEvento(idAsiento);
+        ae.bloquear();
+    }
+
+    @Override
+    public void habilitarAsientoEnEvento(String idEvento, String idAsiento) {
+        // Gestión comercial: libera la silla bloqueada solo en este evento
+        Evento evento = plat.buscarEvento(idEvento);
+        AsientoEvento ae = evento.obtenerAsientoEvento(idAsiento);
+        ae.liberar();
     }
 
     // === COMPRAS ===

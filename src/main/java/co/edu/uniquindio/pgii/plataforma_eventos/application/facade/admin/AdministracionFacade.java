@@ -36,8 +36,14 @@ public interface AdministracionFacade {
     void eliminarRecinto(String idRecinto);
     List<Recinto> listarRecintos();
     Zona agregarZona(String idRecinto, String nombre, int capacidad, double precioBase);
+
+    // Gestión física (afecta el recinto: silla rota, fuera de servicio)
     void bloquearAsiento(String idAsiento);
     void habilitarAsiento(String idAsiento);
+
+    // Gestión por evento (afecta solo el inventario de ese evento)
+    void bloquearAsientoEnEvento(String idEvento, String idAsiento);
+    void habilitarAsientoEnEvento(String idEvento, String idAsiento);
 
     // === COMPRAS ===
     List<Compra> listarCompras();

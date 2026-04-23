@@ -1,7 +1,6 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.infrastructure;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.observer.EventoObserver;
-import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Asiento;
@@ -105,15 +104,13 @@ public class PlataformaEventosSingleton {
         char[] filasPlatea = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
         for (char fila : filasPlatea) {
             for (int i = 1; i <= 10; i++) {
-                Asiento silla = new Asiento(fila, i);
-                silla.setEstado(AsientoEstado.DISPONIBLE);
-                platea.getAsientos().add(silla);
+                platea.getAsientos().add(new Asiento(fila, i));
             }
         }
 
-        // Bloqueamos un par de sillas para simular mantenimiento
-        platea.getAsientos().get(0).setEstado(AsientoEstado.BLOQUEADO); // A1 bloqueada
-        platea.getAsientos().get(1).setEstado(AsientoEstado.BLOQUEADO); // A2 bloqueada
+        // A1 y A2 fuera de servicio físico (sillas rotas/en mantenimiento)
+        platea.getAsientos().get(0).setHabilitadoFisicamente(false);
+        platea.getAsientos().get(1).setHabilitadoFisicamente(false);
 
         teatro.getZonas().add(platea);
         teatro.getZonas().add(balcon);

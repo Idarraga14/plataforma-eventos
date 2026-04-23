@@ -1,6 +1,7 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.AsientoEvento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Asiento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
@@ -137,8 +138,9 @@ public class AsignacionController implements Initializable {
             Button btnSilla = new Button(asiento.getSalida());
             btnSilla.setPrefSize(40, 40);
 
-            if (asiento.getEstado() == AsientoEstado.DISPONIBLE) {
-                // Color verde inicial
+            // Estado consultado desde el inventario comercial del evento, no del recinto físico
+            AsientoEvento ae = eventoActual.obtenerAsientoEvento(asiento.getIdAsiento());
+            if (ae.getEstado() == AsientoEstado.DISPONIBLE) {
                 btnSilla.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
                 btnSilla.setOnAction(e -> alternarSilla(btnSilla, asiento));
             } else {

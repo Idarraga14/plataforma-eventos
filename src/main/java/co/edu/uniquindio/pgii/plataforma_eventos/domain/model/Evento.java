@@ -5,7 +5,11 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class Evento {
@@ -19,6 +23,9 @@ public class Evento {
     private final List<String> politicas;
     private final Recinto recinto;
 
+    /** Inventario comercial: estado de cada silla física para ESTE evento específico. */
+    private final Map<String, AsientoEvento> inventarioAsientos = new HashMap<>();
+
     private Evento(EventoBuilder builder) {
         this.idEvento = UUID.randomUUID().toString();
         this.nombre = builder.nombre;
@@ -29,6 +36,33 @@ public class Evento {
         this.recinto = builder.recinto;
         this.estado = EventoEstado.BORRADOR;
         this.politicas = new ArrayList<>();
+        inicializarInventario();
+    }
+
+    /** Construye el inventario a partir de los asientos físicos del recinto. */
+    private void inicializarInventario() {
+        for (Zona zona : recinto.getZonas()) {
+            for (Asiento asiento : zona.getAsientos()) {
+                inventarioAsientos.put(asiento.getIdAsiento(), new AsientoEvento(asiento));
+            }
+        }
+    }
+
+    /** Devuelve el estado comercial de una silla para este evento. */
+    public AsientoEvento obtenerAsientoEvento(String idAsiento) {
+        AsientoEvento ae = inventarioAsientos.get(idAsiento);
+        if (ae == null) {
+            throw new NoSuchElementException("Asiento no encontrado en el inventario del evento: " + idAsiento);
+        }
+        return ae;
+    }
+
+    /** Devuelve todos los AsientoEvento que corresponden a la zona dada. */
+    public Collection<AsientoEvento> getInventarioDe(Zona zona) {
+        return zona.getAsientos().stream()
+                .map(a -> inventarioAsientos.get(a.getIdAsiento()))
+                .filter(ae -> ae != null)
+                .toList();
     }
 
     public String getIdEvento() {
@@ -80,7 +114,6 @@ public class Evento {
         private Recinto recinto;
         private List<String> politicas = new ArrayList<>();
 
-        // Métodos "Fluent"
         public EventoBuilder conNombre(String nombre) {
             this.nombre = nombre;
             return this;
@@ -116,7 +149,6 @@ public class Evento {
             return this;
         }
 
-        // 3. LA VALIDACIÓN (El escudo de la arquitectura)
         public Evento build() {
             if (nombre == null || nombre.trim().isEmpty()) {
                 throw new IllegalStateException("El evento debe tener un nombre.");
@@ -134,6 +166,4 @@ public class Evento {
             return new Evento(this);
         }
     }
-
-
 }
