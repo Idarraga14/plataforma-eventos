@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -42,8 +43,8 @@
 
                     <Label text="Descripción:"    GridPane.rowIndex="0" GridPane.columnIndex="0"
                            style="-fx-font-weight: bold;"/>
-                    <Label fx:id="lblDescripcion" GridPane.rowIndex="0" GridPane.columnIndex="1"
-                           wrapText="true"/>
+                    <TextArea fx:id="lblDescripcion" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                              prefRowCount="3" wrapText="true" editable="false"/>
 
                     <Label text="Fecha y hora:"   GridPane.rowIndex="1" GridPane.columnIndex="0"
                            style="-fx-font-weight: bold;"/>
@@ -56,28 +57,13 @@
                     <Label text="Recinto:"        GridPane.rowIndex="3" GridPane.columnIndex="0"
                            style="-fx-font-weight: bold;"/>
                     <Label fx:id="lblRecinto"     GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-
-                    <Label text="Aforo total:"    GridPane.rowIndex="4" GridPane.columnIndex="0"
-                           style="-fx-font-weight: bold;"/>
-                    <Label fx:id="lblAforo"       GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-
-                    <Label text="Estado:"         GridPane.rowIndex="5" GridPane.columnIndex="0"
-                           style="-fx-font-weight: bold;"/>
-                    <Label fx:id="lblEstado"      GridPane.rowIndex="5" GridPane.columnIndex="1"/>
                 </GridPane>
 
                 <Separator/>
 
-                <!-- Reglas del evento -->
-                <Label text="Reglas del Evento" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
-                <Label fx:id="lblReglas" wrapText="true"
-                       style="-fx-text-fill: #555;"/>
-
-                <Separator/>
-
-                <!-- Políticas (lista) -->
-                <Label text="Políticas de Compra" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
-                <ListView fx:id="listPoliticas" prefHeight="100.0"/>
+                <!-- Zonas y precios -->
+                <Label text="Zonas y Precios" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <ListView fx:id="listZonas" prefHeight="140.0"/>
             </VBox>
         </ScrollPane>
     </center>

@@ -13,7 +13,7 @@ public interface PlataformaFacade {
 
     List<Evento> obtenerEventosDisponibles();
 
-    Evento obtenerEvento(String idEvento);
+    int obtenerCuposDisponibles(String idEvento, String idZona);
 
     // Proceso principal que usa Strategy, Factory, State y Adapter
     void realizarCompra(String idUsuario, String idEvento, String idZona,

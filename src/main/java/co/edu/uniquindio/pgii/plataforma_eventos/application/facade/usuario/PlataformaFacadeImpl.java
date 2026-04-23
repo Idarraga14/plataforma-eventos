@@ -6,12 +6,15 @@ import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.Asignacion
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.EntradaZona;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.PlataformaEventosSingleton;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.ProcesadorPago;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.SimuladorPagoAdapter;
@@ -20,8 +23,8 @@ import java.util.List;
 
 public class PlataformaFacadeImpl implements PlataformaFacade {
 
-    private PlataformaEventosSingleton plat = PlataformaEventosSingleton.getInstance();
-    private ProcesadorPago pasarela = new SimuladorPagoAdapter();
+    private final PlataformaEventosSingleton plat = PlataformaEventosSingleton.getInstance();
+    private final ProcesadorPago pasarela = new SimuladorPagoAdapter();
 
     @Override
     public void realizarCompra(String idUsuario, String idEvento, String idZona, String idAsiento,
@@ -73,8 +76,28 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
     }
 
     @Override
-    public Evento obtenerEvento(String idEvento) {
-        return null;
+    public int obtenerCuposDisponibles(String idEvento, String idZona) {
+        // 1. Buscamos la capacidad total de la zona
+        Evento evento = plat.buscarEvento(idEvento);
+        Zona zona = evento.getRecinto().getZonas().stream()
+                .filter(z -> z.getIdZona().equals(idZona))
+                .findFirst()
+                .orElseThrow();
+
+        // 2. Contamos cuántas entradas se han vendido realmente
+        long entradasVendidas = plat.getCompras().stream()
+                // Filtramos las compras de este evento
+                .filter(c -> c.getEvento().getIdEvento().equals(idEvento))
+                // REGLA CLAVE: No contamos las compras canceladas o devueltas
+                .filter(c -> c.getEstadoEnum() != CompraEstado.CANCELADA && c.getEstadoEnum() != CompraEstado.REEMBOLSADA)
+                // Extraemos todas las entradas de esas compras
+                .flatMap(c -> c.getEntradas().stream())
+                // Filtramos solo las que pertenecen a la zona que estamos consultando
+                .filter(e -> e instanceof EntradaZona && ((EntradaZona) e).getZona().getIdZona().equals(idZona))
+                .count();
+
+        // 3. Retornamos la resta matemática
+        return (int) (zona.getCapacidad() - entradasVendidas);
     }
 
     @Override

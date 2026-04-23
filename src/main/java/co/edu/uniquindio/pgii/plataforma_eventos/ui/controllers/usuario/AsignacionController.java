@@ -1,103 +1,222 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario;
 
-import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.PlataformaFacade;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Asiento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
+import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class AsignacionController implements Initializable {
 
-    // --- INYECCIÓN DE DEPENDENCIAS ---
-    // Usuario actual: SessionManager.getInstance().getUsuarioActual()
-    private PlataformaFacade plataformaFacade;
-    private Evento eventoSeleccionado;
+    @FXML
+    private ComboBox<Zona> comboZonas;
+    @FXML
+    private VBox panelAsientos;
+    @FXML
+    private GridPane gridAsientos;
+    @FXML
+    private Label lblInfo;
+    @FXML
+    private Button btnContinuar;
+    @FXML
+    private Button btnVolver;
 
-    /** Asiento elegido (modo numerado) o null (modo por zona). */
-    private Asiento asientoSeleccionado;
+    @FXML
+    private ComboBox<Integer> comboCantidad;
+    @FXML
+    private HBox panelCantidad;
 
-    // --- COMPONENTES FXML ---
-    @FXML private ComboBox<Zona> comboZonas;
-    @FXML private Label          lblPrecioZona;
+    private Evento eventoActual;
+    private boolean requiereAsientos;
 
-    /** Panel del GridPane de asientos — se muestra sólo en modo numerado. */
-    @FXML private VBox           pnlAsientos;
-    @FXML private GridPane       gridAsientos;
+    // Regla de negocio antirreventa
+    private static final int MAX_ENTRADAS = 6;
 
-    /** Panel de spinner de cantidad — se muestra sólo en modo por zona. */
-    @FXML private VBox           pnlCantidad;
-    @FXML private Spinner<Integer> spinnerCantidad;
-
-    @FXML private Label          lblResumenSeleccion;
-    @FXML private Button         btnVolver;
-    @FXML private Button         btnContinuar;
+    // Ahora rastreamos una LISTA de asientos
+    private List<Asiento> asientosSeleccionados = new ArrayList<>();
+    // Y necesitamos guardar los botones para poder cambiarles el color de vuelta
+    private List<Button> botonesSeleccionados = new ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // TODO: Configurar comboZonas con la lista de zonas del evento inyectado
-        // TODO: Listener en comboZonas para actualizar lblPrecioZona y el grid/spinner
+        this.eventoActual = SessionManager.getInstance().getEventoSeleccionado();
+        this.requiereAsientos = (eventoActual.getCategoria() == EventoCategoria.TEATRO ||
+                eventoActual.getCategoria() == EventoCategoria.CONFERENCIA);
+
+        configurarComboBox();
+
+        // Inicializar el selector numérico (1 a 6)
+        comboCantidad.getItems().addAll(1, 2, 3, 4, 5, 6);
+        comboCantidad.setValue(1);
+
+        // Ocultamos ambos paneles hasta que se elija zona
+        panelAsientos.setVisible(false);
+        panelAsientos.setManaged(false);
+        panelCantidad.setVisible(false);
+        panelCantidad.setManaged(false);
+
+        comboZonas.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldVal, newVal) -> {
+                    if (newVal != null) procesarSeleccionZona(newVal);
+                });
     }
 
-    /** Inyecta la fachada de usuario. */
-    public void setPlataformaFacade(PlataformaFacade plataformaFacade) {
-        this.plataformaFacade = plataformaFacade;
+    private void configurarComboBox() {
+        // Hacemos que el ComboBox muestre el nombre de la Zona, pero guarde el objeto completo
+        comboZonas.setConverter(new StringConverter<Zona>() {
+            @Override
+            public String toString(Zona zona) {
+                return zona == null ? "" : zona.getNombre() + " ($" + zona.getPrecioBase() + ")";
+            }
+
+            @Override
+            public Zona fromString(String string) {
+                return null;
+            }
+        });
+
+        comboZonas.getItems().addAll(eventoActual.getRecinto().getZonas());
     }
 
-    /** Recibe el evento desde la vista anterior. */
-    public void setEvento(Evento evento) {
-        this.eventoSeleccionado = evento;
-        // TODO: Poblar comboZonas con evento.getRecinto().getZonas()
-    }
+    private void procesarSeleccionZona(Zona zona) {
+        // Limpiamos la canasta cada vez que cambian de zona
+        asientosSeleccionados.clear();
+        botonesSeleccionados.clear();
 
-    /**
-     * MÉTODO DINÁMICO CLAVE.
-     * Configura la vista según si el evento es numerado (con asientos) o por zona.
-     *
-     * @param esNumerado true → muestra GridPane de asientos y oculta el spinner.
-     *                   false → muestra el spinner de cantidad y oculta el GridPane.
-     */
-    public void configurarVista(boolean esNumerado) {
-        pnlAsientos.setVisible(esNumerado);
-        pnlAsientos.setManaged(esNumerado);
+        if (!requiereAsientos) {
+            panelAsientos.setVisible(false);
+            panelAsientos.setManaged(false);
 
-        pnlCantidad.setVisible(!esNumerado);
-        pnlCantidad.setManaged(!esNumerado);
+            panelCantidad.setVisible(true);
+            panelCantidad.setManaged(true);
 
-        if (esNumerado) {
-            // TODO: Construir dinámicamente el GridPane con los botones de asiento
-            //       recorriendo zona.getAsientos() y coloreando según AsientoEstado
+            lblInfo.setText("Zona seleccionada: " + zona.getNombre() + ". Seleccione la cantidad de entradas.");
+        } else {
+            panelCantidad.setVisible(false);
+            panelCantidad.setManaged(false);
+
+            panelAsientos.setVisible(true);
+            panelAsientos.setManaged(true);
+            dibujarCuadriculaAsientos(zona);
+            lblInfo.setText("Sillas seleccionadas: 0 / " + MAX_ENTRADAS);
         }
     }
 
-    // --- HANDLERS DE EVENTOS ---
+    private void dibujarCuadriculaAsientos(Zona zona) {
+        gridAsientos.getChildren().clear();
+        gridAsientos.setHgap(5);
+        gridAsientos.setVgap(5);
+        gridAsientos.setPadding(new Insets(10));
 
-    @FXML
-    public void onZonaSeleccionada(ActionEvent event) {
-        // TODO: Obtener Zona seleccionada y actualizar lblPrecioZona
-        // TODO: Limpiar selección anterior (asientoSeleccionado = null, lblResumenSeleccion)
-        // TODO: Si esNumerado, reconstruir gridAsientos con los asientos de la nueva zona
+        int col = 0, fila = 0;
+
+        for (Asiento asiento : zona.getAsientos()) {
+            Button btnSilla = new Button(asiento.getIdAsiento());
+            btnSilla.setPrefSize(40, 40);
+
+            if (asiento.getEstado() == AsientoEstado.DISPONIBLE) {
+                // Color verde inicial
+                btnSilla.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
+                btnSilla.setOnAction(e -> alternarSilla(btnSilla, asiento));
+            } else {
+                btnSilla.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+                btnSilla.setDisable(true);
+            }
+
+            gridAsientos.add(btnSilla, col, fila);
+            col++;
+            if (col == 10) {
+                col = 0;
+                fila++;
+            }
+        }
+    }
+
+    private void alternarSilla(Button btnClickeado, Asiento asiento) {
+        // Si la silla YA estaba seleccionada, la deseleccionamos
+        if (asientosSeleccionados.contains(asiento)) {
+            asientosSeleccionados.remove(asiento);
+            botonesSeleccionados.remove(btnClickeado);
+            // Regresar al verde
+            btnClickeado.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
+        }
+        // Si no estaba seleccionada, intentamos agregarla
+        else {
+            if (asientosSeleccionados.size() >= MAX_ENTRADAS) {
+                mostrarError("No puedes comprar más de " + MAX_ENTRADAS + " entradas por transacción.");
+                return;
+            }
+            asientosSeleccionados.add(asiento);
+            botonesSeleccionados.add(btnClickeado);
+            // Cambiar a azul indicando "seleccionada"
+            btnClickeado.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
+        }
+
+        lblInfo.setText("Sillas seleccionadas: " + asientosSeleccionados.size() + " / " + MAX_ENTRADAS);
     }
 
     @FXML
-    public void onVolverClick(ActionEvent event) {
-        // TODO: Navegar de regreso a DetalleEventoView
+    public void onContinuarClick() {
+        Zona zonaElegida = comboZonas.getValue();
+
+        if (zonaElegida == null) {
+            mostrarError("Debe seleccionar una zona.");
+            return;
+        }
+
+        if (requiereAsientos && asientosSeleccionados.isEmpty()) {
+            mostrarError("Debe seleccionar al menos una silla.");
+            return;
+        }
+
+        // 1. Guardar en sesión
+        SessionManager.getInstance().setZonaSeleccionada(zonaElegida);
+
+        if (requiereAsientos) {
+            SessionManager.getInstance().setAsientosSeleccionados(new ArrayList<>(asientosSeleccionados));
+            // La cantidad de asientos dicta la cantidad de entradas
+            SessionManager.getInstance().setCantidadEntradas(asientosSeleccionados.size());
+        } else {
+            // Para concierto general, sacamos el número del ComboBox
+            SessionManager.getInstance().setCantidadEntradas(comboCantidad.getValue());
+        }
+
+        // 2. Navegar
+        Stage stage = (Stage) btnContinuar.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("CheckoutExtrasView.fxml", stage);
     }
 
     @FXML
-    public void onContinuarClick(ActionEvent event) {
-        // TODO: Validar que haya una zona/asiento seleccionado
-        // TODO: Navegar a CheckoutExtrasView pasando la zona, asiento y evento
+    public void onVolverClick() {
+        Stage stage = (Stage) btnVolver.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("DetalleEventoView.fxml", stage);
+    }
+
+    private void mostrarError(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Selección Incompleta");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 }
