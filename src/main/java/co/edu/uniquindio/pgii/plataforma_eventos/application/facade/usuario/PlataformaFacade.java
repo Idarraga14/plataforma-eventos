@@ -37,4 +37,6 @@ public interface PlataformaFacade {
     void cancelarOrdenCompra(String idCompra);
 
     Compra buscarCompra(String idCompra);
+
+    List<Compra> obtenerComprasPorUsuario(String idUsuario);
 }

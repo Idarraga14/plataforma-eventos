@@ -136,6 +136,14 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
     }
 
     @Override
+    public List<Compra> obtenerComprasPorUsuario(String idUsuario) {
+        return plat.getCompras().stream()
+                .filter(c -> c.getUsuario().getIdUsuario().equals(idUsuario))
+                .sorted((a, b) -> b.getFecha().compareTo(a.getFecha()))
+                .toList();
+    }
+
+    @Override
     public Usuario login(String correo, String password) {
         return plat.getUsuarios().stream()
                 .filter(u -> u.getCorreo().equals(correo) && u.getPassword().equals(password))
