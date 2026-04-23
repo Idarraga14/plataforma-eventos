@@ -2,6 +2,9 @@ package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.PlataformaFacade;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.PlataformaFacadeImpl;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Asiento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
@@ -23,10 +26,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class CheckoutExtrasController implements Initializable {
-
-    private static final double PRECIO_VIP         = 50_000.0;
-    private static final double PRECIO_SEGURO      = 15_000.0;
-    private static final double PRECIO_PARQUEADERO = 20_000.0;
 
     private final PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
 
@@ -103,10 +102,13 @@ public class CheckoutExtrasController implements Initializable {
     // --- Helpers ---
 
     private void actualizarTotal() {
+        int cantidad = Math.max(1, SessionManager.getInstance().getCantidadEntradas());
         double total = subtotalEntradas;
-        if (chkVip.isSelected())         total += PRECIO_VIP;
-        if (chkSeguro.isSelected())      total += PRECIO_SEGURO;
-        if (chkParqueadero.isSelected()) total += PRECIO_PARQUEADERO;
+        // Los decoradores son la fuente de verdad del costo de cada extra; cada
+        // entrada paga el extra individualmente, igual que en la fachada al crear la orden.
+        if (chkVip.isSelected())         total += PaqueteVIPDecorator.COSTO * cantidad;
+        if (chkSeguro.isSelected())      total += SeguroCancelacionDecorator.COSTO_DEFAULT * cantidad;
+        if (chkParqueadero.isSelected()) total += ParqueaderoDecorator.COSTO * cantidad;
         lblTotal.setText(String.format("Total a Pagar: $%,.0f", total));
     }
 

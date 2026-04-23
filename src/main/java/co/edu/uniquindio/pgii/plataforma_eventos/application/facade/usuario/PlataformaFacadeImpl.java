@@ -208,7 +208,7 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
         for (String extra : extras) {
             switch (extra) {
                 case "VIP"                 -> ticket = new PaqueteVIPDecorator(ticket);
-                case "SEGURO_CANCELACION"  -> ticket = new SeguroCancelacionDecorator(ticket, 15_000.0);
+                case "SEGURO_CANCELACION"  -> ticket = new SeguroCancelacionDecorator(ticket);
                 case "PARQUEADERO"         -> ticket = new ParqueaderoDecorator(ticket);
             }
         }

@@ -4,7 +4,14 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
 
 public class SeguroCancelacionDecorator extends EntradaDecorator {
 
+    /** Costo por defecto del seguro. Fuente de verdad para la UI y la fachada. */
+    public static final double COSTO_DEFAULT = 15_000.0;
+
     private final double costoSeguro;
+
+    public SeguroCancelacionDecorator(Entrada entradaEnvuelta) {
+        this(entradaEnvuelta, COSTO_DEFAULT);
+    }
 
     public SeguroCancelacionDecorator(Entrada entradaEnvuelta, double costoSeguro) {
         super(entradaEnvuelta);

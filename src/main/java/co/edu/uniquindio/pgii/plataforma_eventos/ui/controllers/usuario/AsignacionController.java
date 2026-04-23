@@ -62,6 +62,10 @@ public class AsignacionController implements Initializable {
         this.requiereAsientos = (eventoActual.getCategoria() == EventoCategoria.TEATRO ||
                 eventoActual.getCategoria() == EventoCategoria.CONFERENCIA);
 
+        // Arrancamos con la canasta limpia: si venimos de otra compra previa,
+        // la sesión puede traer asientos de un evento distinto.
+        SessionManager.getInstance().setAsientosSeleccionados(new ArrayList<>());
+
         configurarComboBox();
 
         // Inicializar el selector numérico (1 a 6)
@@ -196,7 +200,9 @@ public class AsignacionController implements Initializable {
             // La cantidad de asientos dicta la cantidad de entradas
             SessionManager.getInstance().setCantidadEntradas(asientosSeleccionados.size());
         } else {
-            // Para concierto general, sacamos el número del ComboBox
+            // Para concierto general, sacamos el número del ComboBox y nos aseguramos
+            // de limpiar cualquier asiento que hubiera quedado en sesión.
+            SessionManager.getInstance().setAsientosSeleccionados(new ArrayList<>());
             SessionManager.getInstance().setCantidadEntradas(comboCantidad.getValue());
         }
 

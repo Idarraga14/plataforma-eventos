@@ -262,9 +262,9 @@ public class AdministracionFacadeImpl implements AdministracionFacade {
             if (c.getEstadoEnum() != CompraEstado.PAGADA
                     && c.getEstadoEnum() != CompraEstado.CONFIRMADA) continue;
             for (Entrada e : c.getEntradas()) {
-                if (contienePaqueteVIP(e))      vip += 50_000.0;
-                if (contieneSeguro(e))          seguro += 15_000.0;
-                if (contieneParqueadero(e))     parqueadero += 20_000.0;
+                if (contienePaqueteVIP(e))      vip += PaqueteVIPDecorator.COSTO;
+                if (contieneSeguro(e))          seguro += SeguroCancelacionDecorator.COSTO_DEFAULT;
+                if (contieneParqueadero(e))     parqueadero += ParqueaderoDecorator.COSTO;
             }
         }
         Map<String, Double> m = new LinkedHashMap<>();
