@@ -120,23 +120,39 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
 
     @Override
     public int obtenerCuposDisponibles(String idEvento, String idZona) {
-        // 1. Buscamos la capacidad total de la zona
         Evento evento = plat.buscarEvento(idEvento);
         Zona zona = evento.getRecinto().getZonas().stream()
                 .filter(z -> z.getIdZona().equals(idZona))
                 .findFirst()
                 .orElseThrow();
 
-        // 2. Contamos entradas activas (CREADA/PAGADA/CONFIRMADA reservan cupo)
+        // Zonas con asientos físicos: contar asientos DISPONIBLES.
+        if (!zona.getAsientos().isEmpty()) {
+            return (int) zona.getAsientos().stream()
+                    .filter(a -> a.getEstado() == co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.AsientoEstado.DISPONIBLE)
+                    .count();
+        }
+
+        // Zonas de aforo libre: capacidad - entradas activas (desenvuelve decoradores).
         long entradasOcupadas = plat.getCompras().stream()
                 .filter(c -> c.getEvento().getIdEvento().equals(idEvento))
                 .filter(c -> c.getEstadoEnum() != CompraEstado.CANCELADA
                         && c.getEstadoEnum() != CompraEstado.REEMBOLSADA)
                 .flatMap(c -> c.getEntradas().stream())
+                .map(PlataformaFacadeImpl::entradaBase)
                 .filter(e -> e instanceof EntradaZona && ((EntradaZona) e).getZona().getIdZona().equals(idZona))
                 .count();
 
         return (int) (zona.getCapacidad() - entradasOcupadas);
+    }
+
+    private static co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada entradaBase(
+            co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada e) {
+        co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada actual = e;
+        while (actual instanceof co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.EntradaDecorator d) {
+            actual = d.getEntradaEnvuelta();
+        }
+        return actual;
     }
 
     @Override

@@ -176,6 +176,7 @@ public class AdminEventosController implements Initializable {
 
     private void cargarEventos() {
         tblEventos.setItems(FXCollections.observableArrayList(administracionFacade.listarEventos()));
+        tblEventos.refresh();
     }
 
     private void limpiarFormulario() {

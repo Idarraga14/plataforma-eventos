@@ -104,19 +104,21 @@ public class AdminDashboardController implements Initializable, EventoObserver {
         }
         lineChartVentas.getData().add(serie);
 
-        // PieChart: ocupación del primer evento publicado (si existe)
-        pieChartOcupacion.setData(FXCollections.observableArrayList());
+        // PieChart: ocupación del primer evento publicado (si existe).
+        // Construimos la lista completa y luego setData para forzar repintado correcto.
+        javafx.collections.ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
         administracionFacade.listarEventos().stream()
                 .filter(ev -> ev.getEstado() == co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado.PUBLICADO)
                 .findFirst()
                 .ifPresent(ev -> {
                     Map<String, Double> ocu = administracionFacade.ocupacionPorZona(ev.getIdEvento());
                     for (Map.Entry<String, Double> en : ocu.entrySet()) {
-                        pieChartOcupacion.getData().add(new PieChart.Data(
+                        pieData.add(new PieChart.Data(
                                 en.getKey() + String.format(" (%.1f%%)", en.getValue()),
                                 Math.max(en.getValue(), 0.01)));
                     }
                 });
+        pieChartOcupacion.setData(pieData);
 
         // BarChart: servicios
         barChartServicios.getData().clear();

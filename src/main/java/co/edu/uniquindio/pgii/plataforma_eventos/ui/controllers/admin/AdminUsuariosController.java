@@ -132,6 +132,7 @@ public class AdminUsuariosController implements Initializable {
     private void cargarUsuarios() {
         List<Usuario> lista = administracionFacade.listarUsuarios();
         tblUsuarios.setItems(FXCollections.observableArrayList(lista));
+        tblUsuarios.refresh();
         lblTotalUsuarios.setText("Total: " + lista.size() + " usuarios");
     }
 
