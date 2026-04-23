@@ -3,6 +3,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
@@ -31,11 +32,13 @@
 
     <!-- ═══ CONTENIDO CENTRAL ═══ -->
     <center>
-        <VBox spacing="16.0">
-            <padding><Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/></padding>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                    minHeight="0" style="-fx-background-color: transparent;">
+            <VBox spacing="16.0">
+                <padding><Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/></padding>
 
-            <!-- ── Modo numerado: grilla de asientos ── -->
-            <VBox fx:id="panelAsientos" spacing="8.0">
+                <!-- ── Modo numerado: grilla de asientos ── -->
+                <VBox fx:id="panelAsientos" spacing="8.0">
                 <Label text="Seleccione su asiento:"
                        style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                 <Label text="[ ESCENARIO ]"
@@ -71,7 +74,8 @@
                 <Label fx:id="lblInfo" text="Seleccione una zona para comenzar."
                        style="-fx-text-fill: #555;"/>
             </HBox>
-        </VBox>
+            </VBox>
+        </ScrollPane>
     </center>
 
     <!-- ═══ PANEL INFERIOR: Acciones ═══ -->

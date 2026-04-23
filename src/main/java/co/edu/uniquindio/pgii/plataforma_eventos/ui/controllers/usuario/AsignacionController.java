@@ -131,7 +131,7 @@ public class AsignacionController implements Initializable {
         int col = 0, fila = 0;
 
         for (Asiento asiento : zona.getAsientos()) {
-            Button btnSilla = new Button(asiento.getIdAsiento());
+            Button btnSilla = new Button(asiento.getSalida());
             btnSilla.setPrefSize(40, 40);
 
             if (asiento.getEstado() == AsientoEstado.DISPONIBLE) {

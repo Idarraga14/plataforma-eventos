@@ -21,12 +21,8 @@ public class Asiento {
         return idAsiento;
     }
 
-    public char getFila() {
-        return fila;
-    }
-
-    public int getNumero() {
-        return numero;
+    public String getSalida() {
+        return String.format("%c%d", fila, numero);
     }
 
     public AsientoEstado getEstado() {
@@ -38,5 +34,9 @@ public class Asiento {
             throw new IllegalStateException("El asiento ya está ocupado o bloqueado.");
         }
         this.estado = AsientoEstado.VENDIDO;
+    }
+
+    public void setEstado(AsientoEstado estado) {
+        this.estado = estado;
     }
 }
