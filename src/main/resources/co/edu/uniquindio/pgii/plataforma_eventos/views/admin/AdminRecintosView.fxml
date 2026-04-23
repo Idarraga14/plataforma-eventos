@@ -18,6 +18,18 @@
     <top>
         <VBox style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;">
             <padding><Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/></padding>
+            <HBox spacing="6.0" alignment="CENTER_LEFT">
+                <Button text="Dashboard"   onAction="#onNavDashboard"/>
+                <Button text="Eventos"     onAction="#onNavEventos"/>
+                <Button text="Recintos"    onAction="#onNavRecintos" disable="true"
+                        style="-fx-background-color: #34495e; -fx-text-fill: white;"/>
+                <Button text="Usuarios"    onAction="#onNavUsuarios"/>
+                <Button text="Compras"     onAction="#onNavCompras"/>
+                <Button text="Incidencias" onAction="#onNavIncidencias"/>
+                <Button text="Cerrar sesión" onAction="#onCerrarSesion"
+                        style="-fx-background-color: #7f8c8d; -fx-text-fill: white;"/>
+                <padding><Insets bottom="8.0"/></padding>
+            </HBox>
             <Label text="Gestión de Recintos y Zonas"
                    style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
             <HBox spacing="10.0" alignment="CENTER_LEFT">

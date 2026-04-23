@@ -1,35 +1,34 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.admin;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.admin.AdministracionFacade;
+import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.admin.AdministracionFacadeImpl;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.observer.EventoObserver;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
-import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
+import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.stage.Stage;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ResourceBundle;
 
-/**
- * Controlador del panel de administración.
- * Implementa EventoObserver para recibir notificaciones de cambios de aforo en tiempo real.
- * Registro: administracionFacade.registrarObserver(this) en initialize().
- */
 public class AdminDashboardController implements Initializable, EventoObserver {
 
-    // --- INYECCIÓN DE DEPENDENCIAS ---
-    // Admin actual: SessionManager.getInstance().getUsuarioActual()
-    private AdministracionFacade administracionFacade;
+    private AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
 
-    // --- COMPONENTES FXML ---
     @FXML private Label    lblEventosActivos;
     @FXML private Label    lblVentasMes;
     @FXML private Label    lblTotalUsuarios;
@@ -44,46 +43,89 @@ public class AdminDashboardController implements Initializable, EventoObserver {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // TODO: Registrar este controlador como observer del sistema de eventos
-        //       administracionFacade.registrarObserver(this);
-
-        // TODO: Cargar métricas iniciales llamando a cargarDashboard()
+        administracionFacade.registrarObserver(this);
         cargarDashboard();
     }
 
-    /** Inyecta la fachada de administración. */
     public void setAdministracionFacade(AdministracionFacade administracionFacade) {
         this.administracionFacade = administracionFacade;
     }
 
-    // --- OBSERVER ---
-
     @Override
     public void onAforoActualizado(Evento evento) {
-        // TODO: Refrescar pieChartOcupacion y las tarjetas de resumen
-        //       cuando el aforo de un evento cambie en tiempo real.
-        cargarDashboard();
+        Platform.runLater(this::cargarDashboard);
     }
-
-    // --- ACCIONES ---
 
     @FXML
     public void onRefrescarClick(ActionEvent event) {
         cargarDashboard();
     }
 
-    // --- MÉTODOS PRIVADOS ---
+    // --- Navegación ---
+    @FXML public void onNavDashboard(ActionEvent e) { }
+    @FXML public void onNavEventos(ActionEvent e) { navegar("AdminEventosView.fxml"); }
+    @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
+    @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
+    @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
+    @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
+    @FXML public void onCerrarSesion(ActionEvent e) {
+        co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager.getInstance().logout();
+        navegarUsuario("LoginView.fxml");
+    }
+
+    private void navegar(String fxml) {
+        Stage stage = (Stage) lblEventosActivos.getScene().getWindow();
+        ViewNavigator.cargarVistaAdmin(fxml, stage);
+    }
+
+    private void navegarUsuario(String fxml) {
+        Stage stage = (Stage) lblEventosActivos.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario(fxml, stage);
+    }
+
+    // --- Carga de métricas ---
 
     private void cargarDashboard() {
-        // TODO: Consultar métricas desde administracionFacade y poblar:
-        //   - lblEventosActivos con el conteo de eventos en estado PUBLICADO
-        //   - lblVentasMes con el total de ventas del mes en curso
-        //   - lblTotalUsuarios con el total de usuarios registrados
-        //   - lblIncidenciasAbiertas con incidencias sin resolver
+        lblEventosActivos.setText(String.valueOf(administracionFacade.contarEventosPublicados()));
+        lblTotalUsuarios.setText(String.valueOf(administracionFacade.contarUsuarios()));
+        lblIncidenciasAbiertas.setText(String.valueOf(administracionFacade.contarIncidenciasAbiertas()));
 
-        // TODO: Poblar lineChartVentas con datos de ventas agrupados por período
-        // TODO: Poblar pieChartOcupacion con % de ocupación por zona
-        // TODO: Poblar barChartServicios con ingresos por tipo de servicio adicional
+        LocalDate hoy = LocalDate.now();
+        LocalDate inicioMes = hoy.withDayOfMonth(1);
+        double ventasMes = administracionFacade.totalVentasPeriodo(inicioMes, hoy);
+        lblVentasMes.setText(String.format("$ %,.0f", ventasMes));
+
+        // LineChart: ingresos por mes
+        lineChartVentas.getData().clear();
+        XYChart.Series<String, Number> serie = new XYChart.Series<>();
+        serie.setName("Ingresos");
+        for (Map.Entry<String, Double> e : administracionFacade.ingresosPorMes().entrySet()) {
+            serie.getData().add(new XYChart.Data<>(e.getKey(), e.getValue()));
+        }
+        lineChartVentas.getData().add(serie);
+
+        // PieChart: ocupación del primer evento publicado (si existe)
+        pieChartOcupacion.setData(FXCollections.observableArrayList());
+        administracionFacade.listarEventos().stream()
+                .filter(ev -> ev.getEstado() == co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado.PUBLICADO)
+                .findFirst()
+                .ifPresent(ev -> {
+                    Map<String, Double> ocu = administracionFacade.ocupacionPorZona(ev.getIdEvento());
+                    for (Map.Entry<String, Double> en : ocu.entrySet()) {
+                        pieChartOcupacion.getData().add(new PieChart.Data(
+                                en.getKey() + String.format(" (%.1f%%)", en.getValue()),
+                                Math.max(en.getValue(), 0.01)));
+                    }
+                });
+
+        // BarChart: servicios
+        barChartServicios.getData().clear();
+        XYChart.Series<String, Number> serieServ = new XYChart.Series<>();
+        serieServ.setName("Ingresos por servicio");
+        for (Map.Entry<String, Double> e : administracionFacade.ingresosPorServicioAdicional().entrySet()) {
+            serieServ.getData().add(new XYChart.Data<>(e.getKey(), e.getValue()));
+        }
+        barChartServicios.getData().add(serieServ);
 
         String ahora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
         lblUltimaActualizacion.setText("Última actualización: " + ahora);

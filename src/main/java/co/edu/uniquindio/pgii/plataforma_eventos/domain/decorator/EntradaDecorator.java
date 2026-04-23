@@ -33,4 +33,8 @@ public abstract class EntradaDecorator extends Entrada {
     public void liberarRecursos() {
         entradaEnvuelta.liberarRecursos();
     }
+
+    public Entrada getEntradaEnvuelta() {
+        return entradaEnvuelta;
+    }
 }

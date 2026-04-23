@@ -7,6 +7,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Asiento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Incidencia;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.MedioPago;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Recinto;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
@@ -26,6 +27,7 @@ public class PlataformaEventosSingleton {
     private List<Evento> eventos = new ArrayList<>();
     private List<Recinto> recintos = new ArrayList<>();
     private List<Compra> compras = new ArrayList<>();
+    private List<Incidencia> incidencias = new ArrayList<>();
 
     private List<EventoObserver> observadores = new ArrayList<>();
 
@@ -53,6 +55,10 @@ public class PlataformaEventosSingleton {
 
     public List<Compra> getCompras() {
         return compras;
+    }
+
+    public List<Incidencia> getIncidencias() {
+        return incidencias;
     }
 
     // Carga de datos RF-045

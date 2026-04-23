@@ -1,16 +1,21 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.admin;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.admin.AdministracionFacade;
+import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.admin.AdministracionFacadeImpl;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoCategoria;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.EventoEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Recinto;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
+import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -18,29 +23,33 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class AdminEventosController implements Initializable {
 
-    // --- INYECCIÓN DE DEPENDENCIAS ---
-    // Admin actual: SessionManager.getInstance().getUsuarioActual()
-    private AdministracionFacade administracionFacade;
+    private static final DateTimeFormatter FECHA_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    // --- COMPONENTES FXML: Formulario ---
-    @FXML private Label                   lblModoFormulario;
-    @FXML private TextField               txtNombreEvento;
+    private AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
+
+    @FXML private Label                     lblModoFormulario;
+    @FXML private TextField                 txtNombreEvento;
     @FXML private ComboBox<EventoCategoria> comboCategoria;
-    @FXML private DatePicker              dtpFechaEvento;
-    @FXML private TextField               txtCiudad;
-    @FXML private ComboBox<Recinto>       comboRecinto;
-    @FXML private ComboBox<EventoEstado>  comboEstado;
-    @FXML private TextArea                txtDescripcion;
-    @FXML private Button                  btnLimpiarFormulario;
-    @FXML private Button                  btnGuardarEvento;
+    @FXML private DatePicker                dtpFechaEvento;
+    @FXML private TextField                 txtCiudad;
+    @FXML private ComboBox<Recinto>         comboRecinto;
+    @FXML private ComboBox<EventoEstado>    comboEstado;
+    @FXML private TextArea                  txtDescripcion;
+    @FXML private Button                    btnLimpiarFormulario;
+    @FXML private Button                    btnGuardarEvento;
 
-    // --- COMPONENTES FXML: Tabla ---
     @FXML private TableView<Evento>           tblEventos;
     @FXML private TableColumn<Evento, String> colNombre;
     @FXML private TableColumn<Evento, String> colCategoria;
@@ -50,75 +59,139 @@ public class AdminEventosController implements Initializable {
     @FXML private Button                      btnEditarEvento;
     @FXML private Button                      btnEliminarEvento;
 
-    /** Evento seleccionado actualmente para edición; null cuando se crea uno nuevo. */
     private Evento eventoEnEdicion = null;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // TODO: Poblar combos con los valores de los enums
         comboCategoria.setItems(FXCollections.observableArrayList(EventoCategoria.values()));
         comboEstado.setItems(FXCollections.observableArrayList(EventoEstado.values()));
+        comboRecinto.setItems(FXCollections.observableArrayList(administracionFacade.listarRecintos()));
+        comboRecinto.setConverter(new StringConverter<>() {
+            @Override public String toString(Recinto r) { return r == null ? "" : r.getNombre(); }
+            @Override public Recinto fromString(String s) { return null; }
+        });
 
-        // TODO: Cargar recintos disponibles en comboRecinto
-        //       comboRecinto.setItems(FXCollections.observableArrayList(administracionFacade.listarRecintos()));
+        colNombre.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombre()));
+        colCategoria.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCategoria().name()));
+        colFecha.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFecha().format(FECHA_FMT)));
+        colCiudad.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCiudad()));
+        colEstado.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEstado().name()));
 
-        // TODO: Configurar cellValueFactory de cada columna de tblEventos
-
-        // TODO: Cargar todos los eventos en la tabla:
-        //       tblEventos.setItems(FXCollections.observableArrayList(administracionFacade.listarEventos()));
+        cargarEventos();
     }
 
-    /** Inyecta la fachada de administración. */
-    public void setAdministracionFacade(AdministracionFacade administracionFacade) {
-        this.administracionFacade = administracionFacade;
-    }
-
-    // --- HANDLERS: Formulario ---
+    public void setAdministracionFacade(AdministracionFacade f) { this.administracionFacade = f; }
 
     @FXML
     public void onGuardarEventoClick(ActionEvent event) {
-        if (eventoEnEdicion == null) {
-            // TODO: Leer campos y delegar a administracionFacade.crearEvento()
-        } else {
-            // TODO: Actualizar el eventoEnEdicion con los datos del formulario
-            // TODO: Delegar a administracionFacade.actualizarEvento()
+        try {
+            String nombre = txtNombreEvento.getText();
+            EventoCategoria cat = comboCategoria.getValue();
+            LocalDate fecha = dtpFechaEvento.getValue();
+            String ciudad = txtCiudad.getText();
+            Recinto recinto = comboRecinto.getValue();
+            EventoEstado estado = comboEstado.getValue();
+            String desc = txtDescripcion.getText();
+
+            if (nombre == null || nombre.isBlank() || cat == null || fecha == null
+                    || ciudad == null || ciudad.isBlank() || recinto == null) {
+                mostrarError("Completa los campos obligatorios (nombre, categoría, fecha, ciudad, recinto).");
+                return;
+            }
+
+            if (eventoEnEdicion == null) {
+                Evento nuevo = administracionFacade.crearEvento(nombre, cat, desc, ciudad,
+                        fecha.atTime(20, 0), recinto.getIdRecinto());
+                if (estado != null) administracionFacade.actualizarEstadoEvento(nuevo.getIdEvento(), estado);
+            } else {
+                if (estado != null && estado != eventoEnEdicion.getEstado()) {
+                    administracionFacade.actualizarEstadoEvento(eventoEnEdicion.getIdEvento(), estado);
+                }
+            }
+            cargarEventos();
+            limpiarFormulario();
+        } catch (RuntimeException ex) {
+            mostrarError(ex.getMessage());
         }
-        // TODO: Refrescar tblEventos y limpiar formulario
-        limpiarFormulario();
     }
 
     @FXML
-    public void onLimpiarFormularioClick(ActionEvent event) {
-        limpiarFormulario();
-    }
-
-    // --- HANDLERS: Tabla ---
+    public void onLimpiarFormularioClick(ActionEvent event) { limpiarFormulario(); }
 
     @FXML
     public void onEditarEventoClick(ActionEvent event) {
-        // TODO: Obtener evento seleccionado: tblEventos.getSelectionModel().getSelectedItem()
-        // TODO: Precargar campos del formulario con los datos del evento
-        // TODO: Cambiar lblModoFormulario a "Editar Evento" y setear eventoEnEdicion
+        Evento sel = tblEventos.getSelectionModel().getSelectedItem();
+        if (sel == null) { mostrarError("Selecciona un evento para editar."); return; }
+        eventoEnEdicion = sel;
+        lblModoFormulario.setText("Editar Evento (sólo estado editable)");
+        txtNombreEvento.setText(sel.getNombre());
+        txtNombreEvento.setDisable(true);
+        comboCategoria.setValue(sel.getCategoria());
+        comboCategoria.setDisable(true);
+        dtpFechaEvento.setValue(sel.getFecha().toLocalDate());
+        dtpFechaEvento.setDisable(true);
+        txtCiudad.setText(sel.getCiudad());
+        txtCiudad.setDisable(true);
+        comboRecinto.setValue(sel.getRecinto());
+        comboRecinto.setDisable(true);
+        comboEstado.setValue(sel.getEstado());
+        txtDescripcion.setText(sel.getDescripcion());
+        txtDescripcion.setDisable(true);
     }
 
     @FXML
     public void onEliminarEventoClick(ActionEvent event) {
-        // TODO: Obtener evento seleccionado
-        // TODO: Confirmar con un Alert
-        // TODO: Llamar a administracionFacade.eliminarEvento() y refrescar tabla
+        Evento sel = tblEventos.getSelectionModel().getSelectedItem();
+        if (sel == null) { mostrarError("Selecciona un evento."); return; }
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION,
+                "¿Eliminar el evento '" + sel.getNombre() + "'?", ButtonType.YES, ButtonType.NO);
+        a.setHeaderText(null);
+        Optional<ButtonType> r = a.showAndWait();
+        if (r.isEmpty() || r.get() != ButtonType.YES) return;
+        try {
+            administracionFacade.eliminarEvento(sel.getIdEvento());
+            cargarEventos();
+            limpiarFormulario();
+        } catch (RuntimeException ex) {
+            mostrarError(ex.getMessage());
+        }
     }
 
-    // --- MÉTODOS PRIVADOS ---
+    // --- Navegación ---
+    @FXML public void onNavDashboard(ActionEvent e) { navegar("AdminDashboardView.fxml"); }
+    @FXML public void onNavEventos(ActionEvent e) { }
+    @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
+    @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
+    @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
+    @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
+    @FXML public void onCerrarSesion(ActionEvent e) {
+        SessionManager.getInstance().logout();
+        Stage stage = (Stage) tblEventos.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
+    }
+    private void navegar(String fxml) {
+        Stage stage = (Stage) tblEventos.getScene().getWindow();
+        ViewNavigator.cargarVistaAdmin(fxml, stage);
+    }
+
+    private void cargarEventos() {
+        tblEventos.setItems(FXCollections.observableArrayList(administracionFacade.listarEventos()));
+    }
 
     private void limpiarFormulario() {
         eventoEnEdicion = null;
         lblModoFormulario.setText("Nuevo Evento");
-        txtNombreEvento.clear();
-        comboCategoria.setValue(null);
-        dtpFechaEvento.setValue(null);
-        txtCiudad.clear();
-        comboRecinto.setValue(null);
+        txtNombreEvento.clear(); txtNombreEvento.setDisable(false);
+        comboCategoria.setValue(null); comboCategoria.setDisable(false);
+        dtpFechaEvento.setValue(null); dtpFechaEvento.setDisable(false);
+        txtCiudad.clear(); txtCiudad.setDisable(false);
+        comboRecinto.setValue(null); comboRecinto.setDisable(false);
         comboEstado.setValue(null);
-        txtDescripcion.clear();
+        txtDescripcion.clear(); txtDescripcion.setDisable(false);
+    }
+
+    private void mostrarError(String m) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setHeaderText(null); a.setContentText(m); a.showAndWait();
     }
 }
