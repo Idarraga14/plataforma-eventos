@@ -50,4 +50,20 @@ public class Usuario {
     public boolean getEsAdmin() {
         return esAdmin;
     }
+
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public void setNumeroTelefono(String numeroTelefono) {
+        this.numeroTelefono = numeroTelefono;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

@@ -3,6 +3,7 @@ package co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.FormatoReporte;
 
 import java.util.List;
 
@@ -39,4 +40,10 @@ public interface PlataformaFacade {
     Compra buscarCompra(String idCompra);
 
     List<Compra> obtenerComprasPorUsuario(String idUsuario);
+
+    /**
+     * Genera el comprobante de una compra en el formato solicitado.
+     * Delegado a {@link co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.ExportadorReporte}.
+     */
+    byte[] generarComprobante(String idCompra, FormatoReporte formato);
 }

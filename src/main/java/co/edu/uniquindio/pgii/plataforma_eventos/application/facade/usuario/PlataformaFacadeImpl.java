@@ -17,6 +17,10 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.PlataformaEventosSingleton;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.ProcesadorPago;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.SimuladorPagoAdapter;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.ExportadorCSVAdapter;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.ExportadorPDFAdapter;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.ExportadorReporte;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.FormatoReporte;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -136,6 +140,16 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
     }
 
     @Override
+    public byte[] generarComprobante(String idCompra, FormatoReporte formato) {
+        Compra compra = buscarCompra(idCompra);
+        ExportadorReporte exportador = switch (formato) {
+            case PDF -> new ExportadorPDFAdapter();
+            case CSV -> new ExportadorCSVAdapter();
+        };
+        return exportador.exportar(compra);
+    }
+
+    @Override
     public List<Compra> obtenerComprasPorUsuario(String idUsuario) {
         return plat.getCompras().stream()
                 .filter(c -> c.getUsuario().getIdUsuario().equals(idUsuario))
@@ -153,7 +167,22 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
 
     @Override
     public void actualizarPerfil(Usuario usuario) {
+        if (usuario == null) throw new IllegalArgumentException("Usuario nulo.");
 
+        boolean correoEnUso = plat.getUsuarios().stream()
+                .anyMatch(u -> !u.getIdUsuario().equals(usuario.getIdUsuario())
+                        && u.getCorreo().equalsIgnoreCase(usuario.getCorreo()));
+        if (correoEnUso) {
+            throw new IllegalArgumentException("El correo ya está registrado por otro usuario.");
+        }
+
+        Usuario existente = plat.buscarUsuario(usuario.getIdUsuario());
+        existente.setNombreCompleto(usuario.getNombreCompleto());
+        existente.setCorreo(usuario.getCorreo());
+        existente.setNumeroTelefono(usuario.getNumeroTelefono());
+        if (usuario.getPassword() != null && !usuario.getPassword().isBlank()) {
+            existente.setPassword(usuario.getPassword());
+        }
     }
 
     // --- Helpers privados ---

@@ -4,7 +4,11 @@ import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.Plat
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.PlataformaFacadeImpl;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.enums.CompraEstado;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
+import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.FormatoReporte;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
+import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
+import javafx.stage.Stage;
+import javafx.stage.FileChooser;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -22,7 +26,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -105,12 +112,12 @@ public class HistorialComprasController implements Initializable {
 
     @FXML
     public void onExportarPdfClick(ActionEvent event) {
-        mostrarInfo("Exportación a PDF aún no implementada.");
+        exportarSeleccionada(FormatoReporte.PDF, "pdf", "Documento PDF (*.pdf)", "*.pdf");
     }
 
     @FXML
     public void onExportarCsvClick(ActionEvent event) {
-        mostrarInfo("Exportación a CSV aún no implementada.");
+        exportarSeleccionada(FormatoReporte.CSV, "csv", "Archivo CSV (*.csv)", "*.csv");
     }
 
     @FXML
@@ -133,7 +140,61 @@ public class HistorialComprasController implements Initializable {
         }
     }
 
+    // --- NAVEGACIÓN ---
+
+    @FXML
+    public void onNavEventos(ActionEvent event) {
+        Stage stage = (Stage) tblCompras.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("ExplorarEventosView.fxml", stage);
+    }
+
+    @FXML
+    public void onNavHistorial(ActionEvent event) {
+        // ya estamos aquí
+    }
+
+    @FXML
+    public void onNavPerfil(ActionEvent event) {
+        Stage stage = (Stage) tblCompras.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("PerfilUsuarioView.fxml", stage);
+    }
+
+    @FXML
+    public void onCerrarSesion(ActionEvent event) {
+        SessionManager.getInstance().logout();
+        Stage stage = (Stage) tblCompras.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
+    }
+
     // --- Helpers ---
+
+    private void exportarSeleccionada(FormatoReporte formato, String ext, String desc, String pattern) {
+        Compra seleccionada = tblCompras.getSelectionModel().getSelectedItem();
+        if (seleccionada == null) {
+            mostrarInfo("Selecciona una compra para exportar.");
+            return;
+        }
+        CompraEstado estado = seleccionada.getEstadoEnum();
+        if (estado != CompraEstado.PAGADA && estado != CompraEstado.CONFIRMADA) {
+            mostrarInfo("Sólo se pueden exportar compras en estado PAGADA o CONFIRMADA.");
+            return;
+        }
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Guardar comprobante");
+        chooser.setInitialFileName("compra_" + seleccionada.getIdCompra() + "." + ext);
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(desc, pattern));
+        File destino = chooser.showSaveDialog(tblCompras.getScene().getWindow());
+        if (destino == null) return;
+
+        try {
+            byte[] datos = plataformaFacade.generarComprobante(seleccionada.getIdCompra(), formato);
+            Files.write(destino.toPath(), datos);
+            mostrarInfo("Comprobante guardado en: " + destino.getAbsolutePath());
+        } catch (IOException | RuntimeException ex) {
+            mostrarError("No se pudo exportar: " + ex.getMessage());
+        }
+    }
 
     private void configurarColumnas() {
         colIdCompra.setCellValueFactory(data ->

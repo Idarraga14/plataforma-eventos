@@ -111,6 +111,32 @@ public class ExplorarEventosController implements Initializable {
         tablaEventos.setItems(listaMaestraEventos);
     }
 
+    // --- NAVEGACIÓN ---
+
+    @FXML
+    public void onNavEventos() {
+        // ya estamos en esta vista
+    }
+
+    @FXML
+    public void onNavHistorial() {
+        Stage stage = (Stage) btnVerDetalle.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("HistorialComprasView.fxml", stage);
+    }
+
+    @FXML
+    public void onNavPerfil() {
+        Stage stage = (Stage) btnVerDetalle.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("PerfilUsuarioView.fxml", stage);
+    }
+
+    @FXML
+    public void onCerrarSesion() {
+        SessionManager.getInstance().logout();
+        Stage stage = (Stage) btnVerDetalle.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
+    }
+
     @FXML
     public void onVerDetalleClick() {
         Evento eventoSeleccionado = tablaEventos.getSelectionModel().getSelectedItem();
