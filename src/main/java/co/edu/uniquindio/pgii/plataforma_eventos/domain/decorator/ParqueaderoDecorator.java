@@ -9,8 +9,7 @@ public class ParqueaderoDecorator extends EntradaDecorator {
 
     @Override
     public double getPrecioTotal() {
-        // Suponiendo que el parqueadero siempre cuesta 7000 fijos
-        return super.getPrecioTotal() + 7000.0;
+        return super.getPrecioTotal() + 20_000.0;
     }
 
     @Override

@@ -24,43 +24,53 @@ import java.util.ResourceBundle;
 
 public class CheckoutExtrasController implements Initializable {
 
-    private PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
+    private static final double PRECIO_VIP         = 50_000.0;
+    private static final double PRECIO_SEGURO      = 15_000.0;
+    private static final double PRECIO_PARQUEADERO = 20_000.0;
+
+    private final PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
 
     // --- COMPONENTES FXML ---
-    @FXML private CheckBox chkPaseVip;
-    @FXML private CheckBox chkSeguroCancelacion;
+    @FXML private Label    lblResumen;
+    @FXML private Label    lblSubtotal;
+    @FXML private Label    lblTotal;
+    @FXML private CheckBox chkVip;
+    @FXML private CheckBox chkSeguro;
     @FXML private CheckBox chkParqueadero;
-    @FXML private Label    lblPrecioPaseVip;
-    @FXML private Label    lblPrecioSeguro;
-    @FXML private Label    lblPrecioParqueadero;
-    @FXML private Label    lblTotalExtras;
-    @FXML private Button   btnVolver;
-    @FXML private Button   btnContinuar;
+    @FXML private Button   btnCancelar;
+    @FXML private Button   btnIrAPagar;
+
+    private double subtotalEntradas;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        actualizarTotalExtras();
-    }
+        SessionManager sesion = SessionManager.getInstance();
+        Evento evento = sesion.getEventoSeleccionado();
+        Zona zona = sesion.getZonaSeleccionada();
+        int cantidad = Math.max(1, sesion.getCantidadEntradas());
 
-    public void setPlataformaFacade(PlataformaFacade plataformaFacade) {
-        this.plataformaFacade = plataformaFacade;
+        if (evento != null && zona != null) {
+            subtotalEntradas = zona.getPrecioBase() * cantidad;
+            lblResumen.setText(evento.getNombre() + " — " + zona.getNombre() + " (" + cantidad + " entradas)");
+            lblSubtotal.setText(String.format("Subtotal Entradas: $%,.0f", subtotalEntradas));
+        }
+
+        chkVip.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
+        chkSeguro.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
+        chkParqueadero.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
+        actualizarTotal();
     }
 
     // --- HANDLERS ---
 
     @FXML
-    public void onExtrasChanged(ActionEvent event) {
-        actualizarTotalExtras();
-    }
-
-    @FXML
-    public void onVolverClick(ActionEvent event) {
-        Stage stage = (Stage) btnVolver.getScene().getWindow();
+    public void onCancelarClick(ActionEvent event) {
+        Stage stage = (Stage) btnCancelar.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("AsignacionView.fxml", stage);
     }
 
     @FXML
-    public void onContinuarClick(ActionEvent event) {
+    public void onIrAPagarClick(ActionEvent event) {
         SessionManager sesion = SessionManager.getInstance();
         Evento evento = sesion.getEventoSeleccionado();
         Zona zona = sesion.getZonaSeleccionada();
@@ -83,7 +93,7 @@ public class CheckoutExtrasController implements Initializable {
             );
             sesion.setOrdenActual(orden);
 
-            Stage stage = (Stage) btnContinuar.getScene().getWindow();
+            Stage stage = (Stage) btnIrAPagar.getScene().getWindow();
             ViewNavigator.cargarVistaUsuario("PagoView.fxml", stage);
         } catch (RuntimeException ex) {
             mostrarError("No se pudo crear la orden: " + ex.getMessage());
@@ -92,19 +102,19 @@ public class CheckoutExtrasController implements Initializable {
 
     // --- Helpers ---
 
-    private void actualizarTotalExtras() {
-        double total = 0;
-        if (chkPaseVip.isSelected())           total += 50_000.0;
-        if (chkSeguroCancelacion.isSelected()) total += 30_000.0;
-        if (chkParqueadero.isSelected())       total += 7_000.0;
-        lblTotalExtras.setText(String.format("$%,.0f", total));
+    private void actualizarTotal() {
+        double total = subtotalEntradas;
+        if (chkVip.isSelected())         total += PRECIO_VIP;
+        if (chkSeguro.isSelected())      total += PRECIO_SEGURO;
+        if (chkParqueadero.isSelected()) total += PRECIO_PARQUEADERO;
+        lblTotal.setText(String.format("Total a Pagar: $%,.0f", total));
     }
 
-    public List<String> getExtrasSeleccionados() {
+    private List<String> getExtrasSeleccionados() {
         List<String> extras = new ArrayList<>();
-        if (chkPaseVip.isSelected())           extras.add("VIP");
-        if (chkSeguroCancelacion.isSelected()) extras.add("SEGURO_CANCELACION");
-        if (chkParqueadero.isSelected())       extras.add("PARQUEADERO");
+        if (chkVip.isSelected())         extras.add("VIP");
+        if (chkSeguro.isSelected())      extras.add("SEGURO_CANCELACION");
+        if (chkParqueadero.isSelected()) extras.add("PARQUEADERO");
         return extras;
     }
 
