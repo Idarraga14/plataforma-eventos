@@ -19,8 +19,10 @@
             <padding><Insets top="14.0" right="16.0" bottom="14.0" left="16.0"/></padding>
             <Label text="Servicios Adicionales"
                    style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-            <Label text="Mejora tu experiencia con los siguientes extras opcionales."
-                   style="-fx-text-fill: #7f8c8d;"/>
+            <Label fx:id="lblResumen" text="Resumen de compra"
+                   style="-fx-text-fill: #7f8c8d;" wrapText="true"/>
+            <Label fx:id="lblSubtotal" text="Subtotal Entradas: $0"
+                   style="-fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-padding: 6 0 0 0;"/>
         </VBox>
     </top>
 
@@ -33,14 +35,14 @@
             <HBox spacing="14.0" alignment="CENTER_LEFT"
                   style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
                 <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
-                <CheckBox fx:id="chkPaseVip" onAction="#onExtrasChanged"/>
+                <CheckBox fx:id="chkVip"/>
                 <VBox spacing="3.0" HBox.hgrow="ALWAYS">
                     <Label text="Pase VIP"
                            style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
                     <Label text="Acceso prioritario, zona exclusiva y beneficios especiales."
                            style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
                 </VBox>
-                <Label fx:id="lblPrecioPaseVip" text="+ $150.000"
+                <Label text="+ $50.000"
                        style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
             </HBox>
 
@@ -48,14 +50,14 @@
             <HBox spacing="14.0" alignment="CENTER_LEFT"
                   style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
                 <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
-                <CheckBox fx:id="chkSeguroCancelacion" onAction="#onExtrasChanged"/>
+                <CheckBox fx:id="chkSeguro"/>
                 <VBox spacing="3.0" HBox.hgrow="ALWAYS">
                     <Label text="Seguro de Cancelacion"
                            style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
                     <Label text="Reembolso total si cancelas con 48 h de anticipacion."
                            style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
                 </VBox>
-                <Label fx:id="lblPrecioSeguro" text="+ $30.000"
+                <Label text="+ $15.000"
                        style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
             </HBox>
 
@@ -63,14 +65,14 @@
             <HBox spacing="14.0" alignment="CENTER_LEFT"
                   style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
                 <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
-                <CheckBox fx:id="chkParqueadero" onAction="#onExtrasChanged"/>
+                <CheckBox fx:id="chkParqueadero"/>
                 <VBox spacing="3.0" HBox.hgrow="ALWAYS">
                     <Label text="Parqueadero"
                            style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
                     <Label text="Cupo de parqueo cubierto y seguro en el recinto."
                            style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
                 </VBox>
-                <Label fx:id="lblPrecioParqueadero" text="+ $20.000"
+                <Label text="+ $20.000"
                        style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
             </HBox>
 
@@ -78,9 +80,7 @@
 
             <!-- Resumen de precio -->
             <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                <Label text="Total extras:"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
-                <Label fx:id="lblTotalExtras" text="texto"
+                <Label fx:id="lblTotal" text="Total a Pagar: $0"
                        style="-fx-font-size: 16px; -fx-text-fill: #e67e22; -fx-font-weight: bold;"/>
             </HBox>
         </VBox>
@@ -90,8 +90,8 @@
     <bottom>
         <HBox spacing="10.0" alignment="CENTER_RIGHT">
             <padding><Insets top="10.0" right="16.0" bottom="10.0" left="16.0"/></padding>
-            <Button fx:id="btnVolver"    text="Volver"    onAction="#onVolverClick"/>
-            <Button fx:id="btnContinuar" text="Continuar" onAction="#onContinuarClick"
+            <Button fx:id="btnCancelar"  text="Cancelar"   onAction="#onCancelarClick"/>
+            <Button fx:id="btnIrAPagar"  text="Ir a Pagar" onAction="#onIrAPagarClick"
                     style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 13px;"/>
         </HBox>
     </bottom>

@@ -1,5 +1,6 @@
 package co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario;
 
+import co.edu.uniquindio.pgii.plataforma_eventos.application.factory.EntradaFactory;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionPorAsientoStrategy;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionPorZonaStrategy;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionStrategy;
@@ -98,6 +99,12 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
 
         // 3. Retornamos la resta matemática
         return (int) (zona.getCapacidad() - entradasVendidas);
+    }
+
+    @Override
+    public double cotizarTotal(String idEvento, String idZona, int cantidadEntradas, List<String> extras) {
+
+        return 0;
     }
 
     @Override

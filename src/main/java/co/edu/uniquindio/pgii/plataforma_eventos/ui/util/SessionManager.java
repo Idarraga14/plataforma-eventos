@@ -16,6 +16,7 @@ public class SessionManager {
     private Zona zonaSeleccionadaTemporal;
     private List<Asiento> asientosSeleccionadosTemporales = new ArrayList<>();
     private int cantidadEntradasZonaTemporal = 1;
+    private List<String> extrasSeleccionados = new ArrayList<>();
 
     private SessionManager() {
     }
@@ -73,5 +74,13 @@ public class SessionManager {
 
     public int getCantidadEntradas() {
         return cantidadEntradasZonaTemporal;
+    }
+
+    public void setExtrasSeleccionados(List<String> extras) {
+        this.extrasSeleccionados = extras;
+    }
+
+    public List<String> getExtrasSeleccionados() {
+        return extrasSeleccionados;
     }
 }

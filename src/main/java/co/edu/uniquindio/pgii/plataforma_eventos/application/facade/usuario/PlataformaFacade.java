@@ -15,6 +15,8 @@ public interface PlataformaFacade {
 
     int obtenerCuposDisponibles(String idEvento, String idZona);
 
+    double cotizarTotal(String idEvento, String idZona, int cantidadEntradas, List<String> extras);
+
     // Proceso principal que usa Strategy, Factory, State y Adapter
     void realizarCompra(String idUsuario, String idEvento, String idZona,
                         String idAsiento, List<String> extras,

@@ -15,7 +15,6 @@ public abstract class EntradaDecorator extends Entrada {
 
     @Override
     public double getPrecioTotal() {
-        // Delega la responsabilidad a la capa inferior
         return entradaEnvuelta.getPrecioTotal();
     }
 

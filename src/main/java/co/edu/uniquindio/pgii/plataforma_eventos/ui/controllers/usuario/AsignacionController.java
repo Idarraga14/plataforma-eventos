@@ -7,7 +7,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -53,9 +52,9 @@ public class AsignacionController implements Initializable {
     private static final int MAX_ENTRADAS = 6;
 
     // Ahora rastreamos una LISTA de asientos
-    private List<Asiento> asientosSeleccionados = new ArrayList<>();
+    private final List<Asiento> asientosSeleccionados = new ArrayList<>();
     // Y necesitamos guardar los botones para poder cambiarles el color de vuelta
-    private List<Button> botonesSeleccionados = new ArrayList<>();
+    private final List<Button> botonesSeleccionados = new ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
