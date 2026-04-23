@@ -21,7 +21,6 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -137,7 +136,8 @@ public class HistorialComprasController implements Initializable {
     // --- Helpers ---
 
     private void configurarColumnas() {
-        colIdCompra.setCellValueFactory(new PropertyValueFactory<>("idCompra"));
+        colIdCompra.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getIdCompra()));
         colEvento.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getEvento().getNombre()));
         colFechaCompra.setCellValueFactory(data ->
