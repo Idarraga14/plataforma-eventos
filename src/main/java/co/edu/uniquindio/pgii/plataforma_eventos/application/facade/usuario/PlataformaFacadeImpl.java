@@ -3,6 +3,8 @@ package co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionPorAsientoStrategy;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionPorZonaStrategy;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.strategy.AsignacionStrategy;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.AccesoPreferencialDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.MerchandisingDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
@@ -13,6 +15,7 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Entrada;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.EntradaZona;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.MedioPago;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.PlataformaEventosSingleton;
@@ -183,6 +186,25 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
     }
 
     @Override
+    public Usuario registrarUsuario(String nombre, String correo, String telefono, String password) {
+        if (nombre == null || nombre.isBlank())
+            throw new IllegalArgumentException("El nombre es obligatorio.");
+        if (correo == null || !correo.contains("@"))
+            throw new IllegalArgumentException("El correo no es válido.");
+        if (password == null || password.length() < 4)
+            throw new IllegalArgumentException("La contraseña debe tener al menos 4 caracteres.");
+
+        boolean correoEnUso = plat.getUsuarios().stream()
+                .anyMatch(u -> u.getCorreo().equalsIgnoreCase(correo));
+        if (correoEnUso)
+            throw new IllegalArgumentException("Ya existe una cuenta con ese correo.");
+
+        Usuario nuevo = new Usuario(nombre.trim(), correo.trim(), telefono, password, false);
+        plat.getUsuarios().add(nuevo);
+        return nuevo;
+    }
+
+    @Override
     public void actualizarPerfil(Usuario usuario) {
         if (usuario == null) throw new IllegalArgumentException("Usuario nulo.");
 
@@ -208,9 +230,11 @@ public class PlataformaFacadeImpl implements PlataformaFacade {
         if (extras == null) return ticket;
         for (String extra : extras) {
             switch (extra) {
-                case "VIP"                 -> ticket = new PaqueteVIPDecorator(ticket);
-                case "SEGURO_CANCELACION"  -> ticket = new SeguroCancelacionDecorator(ticket);
-                case "PARQUEADERO"         -> ticket = new ParqueaderoDecorator(ticket);
+                case "VIP"                  -> ticket = new PaqueteVIPDecorator(ticket);
+                case "SEGURO_CANCELACION"   -> ticket = new SeguroCancelacionDecorator(ticket);
+                case "PARQUEADERO"          -> ticket = new ParqueaderoDecorator(ticket);
+                case "MERCHANDISING"        -> ticket = new MerchandisingDecorator(ticket);
+                case "ACCESO_PREFERENCIAL"  -> ticket = new AccesoPreferencialDecorator(ticket);
             }
         }
         return ticket;

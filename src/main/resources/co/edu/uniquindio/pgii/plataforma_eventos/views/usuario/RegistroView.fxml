@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="12.0" prefWidth="440.0" prefHeight="560.0"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario.RegistroController"
+      style="-fx-background-color: #f4f4f4;">
+    <padding>
+        <Insets top="40.0" right="70.0" bottom="40.0" left="70.0"/>
+    </padding>
+
+    <Label text="Crear Cuenta"
+           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    <Label text="Completa los datos para registrarte"
+           style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d;"/>
+
+    <Separator/>
+
+    <Label text="Nombre completo" style="-fx-font-weight: bold;"/>
+    <TextField fx:id="txtNombre" promptText="Ej. Juan Pérez" maxWidth="Infinity"/>
+
+    <Label text="Correo electrónico" style="-fx-font-weight: bold;"/>
+    <TextField fx:id="txtCorreo" promptText="correo@ejemplo.com" maxWidth="Infinity"/>
+
+    <Label text="Teléfono" style="-fx-font-weight: bold;"/>
+    <TextField fx:id="txtTelefono" promptText="Ej. 3001234567" maxWidth="Infinity"/>
+
+    <Label text="Contraseña" style="-fx-font-weight: bold;"/>
+    <PasswordField fx:id="txtPassword" promptText="Mínimo 4 caracteres" maxWidth="Infinity"/>
+
+    <PasswordField fx:id="txtConfirmPassword" promptText="Repite la contraseña" maxWidth="Infinity"/>
+
+    <Button fx:id="btnRegistrar" text="Crear Cuenta" maxWidth="Infinity"
+            onAction="#onRegistrarClick"
+            style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px;"/>
+
+    <Hyperlink fx:id="btnVolver" text="¿Ya tienes cuenta? Inicia sesión"
+               onAction="#onVolverClick"
+               style="-fx-text-fill: #2980b9;"/>
+</VBox>

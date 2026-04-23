@@ -11,6 +11,9 @@ public interface PlataformaFacade {
 
     Usuario login(String correo, String password);
 
+    /** Registra un nuevo usuario. Lanza {@link IllegalArgumentException} si el correo ya existe. */
+    Usuario registrarUsuario(String nombre, String correo, String telefono, String password);
+
     void actualizarPerfil(Usuario usuario);
 
     List<Evento> obtenerEventosDisponibles();

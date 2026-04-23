@@ -36,4 +36,8 @@
     <Button fx:id="btnLogin" text="Iniciar Sesión" maxWidth="Infinity"
             onAction="#onLoginClick"
             style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px;"/>
+
+    <Hyperlink fx:id="btnIrARegistro" text="¿No tienes cuenta? Regístrate"
+               onAction="#onIrARegistroClick"
+               style="-fx-text-fill: #27ae60;"/>
 </VBox>

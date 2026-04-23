@@ -86,6 +86,7 @@ public class LoginController {
 
     @FXML
     public void onIrARegistroClick(ActionEvent event) {
-        // TODO: Navegar a la vista de Registro
+        Stage stage = (Stage) btnIrARegistro.getScene().getWindow();
+        ViewNavigator.cargarVistaUsuario("RegistroView.fxml", stage);
     }
 }

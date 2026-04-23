@@ -2,6 +2,8 @@ package co.edu.uniquindio.pgii.plataforma_eventos.ui.controllers.usuario;
 
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.PlataformaFacade;
 import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.PlataformaFacadeImpl;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.AccesoPreferencialDecorator;
+import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.MerchandisingDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.PaqueteVIPDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.ParqueaderoDecorator;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.decorator.SeguroCancelacionDecorator;
@@ -36,6 +38,8 @@ public class CheckoutExtrasController implements Initializable {
     @FXML private CheckBox chkVip;
     @FXML private CheckBox chkSeguro;
     @FXML private CheckBox chkParqueadero;
+    @FXML private CheckBox chkMerchandising;
+    @FXML private CheckBox chkAccesoPreferencial;
     @FXML private Button   btnCancelar;
     @FXML private Button   btnIrAPagar;
 
@@ -57,6 +61,8 @@ public class CheckoutExtrasController implements Initializable {
         chkVip.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
         chkSeguro.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
         chkParqueadero.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
+        chkMerchandising.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
+        chkAccesoPreferencial.selectedProperty().addListener((obs, oldV, newV) -> actualizarTotal());
         actualizarTotal();
     }
 
@@ -106,17 +112,21 @@ public class CheckoutExtrasController implements Initializable {
         double total = subtotalEntradas;
         // Los decoradores son la fuente de verdad del costo de cada extra; cada
         // entrada paga el extra individualmente, igual que en la fachada al crear la orden.
-        if (chkVip.isSelected())         total += PaqueteVIPDecorator.COSTO * cantidad;
-        if (chkSeguro.isSelected())      total += SeguroCancelacionDecorator.COSTO_DEFAULT * cantidad;
-        if (chkParqueadero.isSelected()) total += ParqueaderoDecorator.COSTO * cantidad;
+        if (chkVip.isSelected())              total += PaqueteVIPDecorator.COSTO * cantidad;
+        if (chkSeguro.isSelected())           total += SeguroCancelacionDecorator.COSTO_DEFAULT * cantidad;
+        if (chkParqueadero.isSelected())      total += ParqueaderoDecorator.COSTO * cantidad;
+        if (chkMerchandising.isSelected())    total += MerchandisingDecorator.COSTO * cantidad;
+        if (chkAccesoPreferencial.isSelected()) total += AccesoPreferencialDecorator.COSTO * cantidad;
         lblTotal.setText(String.format("Total a Pagar: $%,.0f", total));
     }
 
     private List<String> getExtrasSeleccionados() {
         List<String> extras = new ArrayList<>();
-        if (chkVip.isSelected())         extras.add("VIP");
-        if (chkSeguro.isSelected())      extras.add("SEGURO_CANCELACION");
-        if (chkParqueadero.isSelected()) extras.add("PARQUEADERO");
+        if (chkVip.isSelected())              extras.add("VIP");
+        if (chkSeguro.isSelected())           extras.add("SEGURO_CANCELACION");
+        if (chkParqueadero.isSelected())      extras.add("PARQUEADERO");
+        if (chkMerchandising.isSelected())    extras.add("MERCHANDISING");
+        if (chkAccesoPreferencial.isSelected()) extras.add("ACCESO_PREFERENCIAL");
         return extras;
     }
 

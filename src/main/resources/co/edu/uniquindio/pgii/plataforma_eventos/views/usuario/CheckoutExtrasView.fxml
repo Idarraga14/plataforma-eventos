@@ -76,6 +76,36 @@
                        style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
             </HBox>
 
+            <!-- Extra 4: Merchandising -->
+            <HBox spacing="14.0" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
+                <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
+                <CheckBox fx:id="chkMerchandising"/>
+                <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                    <Label text="Kit de Merchandising Oficial"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Camiseta, pin y poster exclusivo del artista o evento."
+                           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
+                </VBox>
+                <Label text="+ $35.000"
+                       style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- Extra 5: Acceso Preferencial -->
+            <HBox spacing="14.0" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-border-color: #dfe6e9; -fx-border-width: 1;">
+                <padding><Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/></padding>
+                <CheckBox fx:id="chkAccesoPreferencial"/>
+                <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                    <Label text="Acceso Preferencial Sin Fila"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                    <Label text="Entra primero por puerta exclusiva sin hacer cola."
+                           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;" wrapText="true"/>
+                </VBox>
+                <Label text="+ $25.000"
+                       style="-fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+            </HBox>
+
             <Separator/>
 
             <!-- Resumen de precio -->
