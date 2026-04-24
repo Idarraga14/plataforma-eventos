@@ -10,9 +10,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Genera un PDF 1.4 mínimo (una sola página, fuente Helvetica) sin
- * dependencias externas. Cumple el rol de Adapter: la UI consume
- * {@link ExportadorReporte} sin conocer el formato binario PDF.
+ * Adaptador concreto que serializa un comprobante de {@link Compra} en formato PDF 1.4.
+ *
+ * <p>Genera un documento PDF válido de una sola página (fuente Helvetica, tamaño 12pt)
+ * <strong>sin ninguna dependencia externa</strong>, construyendo manualmente la estructura
+ * de objetos PDF (Catalog, Pages, Page, ContentStream, Font) y su tabla xref. Es la única
+ * implementación de PDF del sistema y cumple el estándar ISO 32000 en su variante mínima.</p>
+ *
+ * <p>El documento incluye: ID de compra, fecha, estado, datos del comprador, nombre del evento
+ * con ciudad, listado de entradas con descripción completa de servicios (cadena de decoradores)
+ * y el total de la compra.</p>
+ *
+ * <p>[Requerimiento: RF-009] - Implementa la exportación del comprobante en formato PDF,
+ * seleccionado cuando el usuario elige {@link FormatoReporte#PDF}.</p>
+ * <p>[Patrón: Adapter] - Actúa como <strong>Adapter Concreto</strong>; implementa
+ * {@link ExportadorReporte} (Target) adaptando la serialización al formato binario PDF.</p>
+ * <p>[Patrón: Decorator] - Invoca {@code entrada.getDescripcionServicios()} que recorre
+ * la cadena de decoradores para incluir todos los servicios adicionales en el comprobante.</p>
  */
 public class ExportadorPDFAdapter implements ExportadorReporte {
 

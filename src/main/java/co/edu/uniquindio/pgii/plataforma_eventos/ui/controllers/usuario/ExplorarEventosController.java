@@ -25,6 +25,20 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador JavaFX del catálogo de eventos disponibles para el usuario.
+ *
+ * <p>Presenta en un {@link TableView} los eventos en estado PUBLICADO, con filtros combinables
+ * por ciudad, categoría y fecha. La lista maestra se carga una vez en {@code initialize()} y
+ * los filtros se aplican en memoria con Streams, evitando llamadas repetidas a la fachada.
+ * Al seleccionar un evento y pulsar "Ver Detalle", lo deposita en {@link SessionManager} y
+ * navega a {@code DetalleEventoView}.</p>
+ *
+ * <p>[Requerimiento: RF-002] - Implementa la búsqueda y filtrado de eventos disponibles
+ * (ciudad, categoría, fecha) que el cliente puede explorar y seleccionar.</p>
+ * <p>[Patrón: Facade] - Obtiene la lista de eventos vía {@link PlataformaFacade#obtenerEventosDisponibles()},
+ * sin acceder directamente al repositorio.</p>
+ */
 public class ExplorarEventosController implements Initializable {
 
     // --- INYECCIÓN DE DEPENDENCIAS ---

@@ -7,7 +7,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.MedioPago;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -24,22 +23,52 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX de la pantalla de pago de la orden de compra.
+ *
+ * <p>Presenta el total de la orden activa y dos pestañas de pago: tarjeta guardada
+ * (seleccionada desde un {@code ComboBox} con los medios del usuario en sesión) o
+ * tarjeta nueva (campos titular, número, CVV, vencimiento). Al pulsar "Pagar" delega
+ * en {@link PlataformaFacade#procesarPagoOrden}, que invoca el Adaptador de pago
+ * ({@code SimuladorPagoAdapter}) y aplica las transiciones de Estado a la Compra.</p>
+ *
+ * <p>Si el banco rechaza el pago, la fachada ya cancela la orden y libera los asientos;
+ * el controlador sólo limpia la sesión y muestra el mensaje de rechazo.
+ * Si el usuario pulsa "Volver", cancela la orden activa explícitamente para liberar los
+ * asientos que quedaron bloqueados durante la reserva.</p>
+ *
+ * <p>[Requerimiento: RF-005] - Implementa el flujo de pago con tarjeta, incluyendo la
+ * integración con el simulador de pasarela y la transición CREADA → PAGADA.</p>
+ * <p>[Requerimiento: RF-010] - Al volver, cancela la orden activa (CREADA → CANCELADA),
+ * liberando los asientos reservados.</p>
+ * <p>[Patrón: Adapter] - Consume el Adaptador de pago a través de la fachada
+ * ({@code PlataformaFacade#procesarPagoOrden}), sin acoplarse directamente al simulador.</p>
+ * <p>[Patrón: State] - La transición de estado de la compra (CREADA→PAGADA o CREADA→CANCELADA)
+ * la ejecuta el Patrón State en el dominio; la UI sólo interpreta el resultado.</p>
+ */
 public class PagoController implements Initializable {
 
-    private PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
+    private final PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
 
     // --- COMPONENTES FXML ---
-    @FXML private Label                   lblTotalAPagar;
-    @FXML private TabPane                 tabPanePago;
-    @FXML private ComboBox<MedioPago>     comboMediosPago;
-    @FXML private Label                   lblSinTarjetas;
-    @FXML private TextField               txtTitularNueva;
-    @FXML private TextField               txtNumTarjeta;
-    @FXML private TextField               txtCvv;
-    @FXML private TextField               txtVencimiento;
-    @FXML private Label                   lblMensajePago;
-    @FXML private Button                  btnVolver;
-    @FXML private Button                  btnPagar;
+    @FXML
+    private Label lblTotalAPagar;
+    @FXML
+    private TabPane tabPanePago;
+    @FXML
+    private ComboBox<MedioPago> comboMediosPago;
+    @FXML
+    private Label lblSinTarjetas;
+    @FXML
+    private TextField txtNumTarjeta;
+    @FXML
+    private TextField txtCvv;
+    @FXML
+    private Label lblMensajePago;
+    @FXML
+    private Button btnVolver;
+    @FXML
+    private Button btnPagar;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -55,14 +84,10 @@ public class PagoController implements Initializable {
         configurarMediosPago();
     }
 
-    public void setPlataformaFacade(PlataformaFacade plataformaFacade) {
-        this.plataformaFacade = plataformaFacade;
-    }
-
     // --- HANDLERS ---
 
     @FXML
-    public void onVolverClick(ActionEvent event) {
+    public void onVolverClick() {
         // Volver equivale a cancelar la orden creada para liberar los asientos bloqueados.
         cancelarOrdenActual();
         Stage stage = (Stage) btnVolver.getScene().getWindow();
@@ -70,10 +95,10 @@ public class PagoController implements Initializable {
     }
 
     @FXML
-    public void onPagarClick(ActionEvent event) {
+    public void onPagarClick() {
         Compra orden = SessionManager.getInstance().getOrdenActual();
         if (orden == null) {
-            mostrarMensaje("No hay una orden activa para procesar.", true);
+            mostrarMensaje("No hay una orden activa para procesar.");
             return;
         }
 
@@ -89,7 +114,7 @@ public class PagoController implements Initializable {
             numTarjeta = txtNumTarjeta.getText();
             cvv = txtCvv.getText();
             if (numTarjeta == null || numTarjeta.isBlank() || cvv == null || cvv.isBlank()) {
-                mostrarMensaje("Complete los datos de la tarjeta.", true);
+                mostrarMensaje("Complete los datos de la tarjeta.");
                 return;
             }
         } else {
@@ -106,7 +131,7 @@ public class PagoController implements Initializable {
         } catch (RuntimeException ex) {
             // El facade ya cancela la orden y libera los asientos si el banco rechaza.
             SessionManager.getInstance().limpiarOrdenActual();
-            mostrarMensaje("Pago rechazado: " + ex.getMessage(), true);
+            mostrarMensaje("Pago rechazado: " + ex.getMessage());
             btnPagar.setDisable(true);
         }
     }
@@ -123,7 +148,9 @@ public class PagoController implements Initializable {
             }
 
             @Override
-            public MedioPago fromString(String s) { return null; }
+            public MedioPago fromString(String s) {
+                return null;
+            }
         });
         comboMediosPago.setItems(FXCollections.observableArrayList(medios));
 
@@ -147,9 +174,9 @@ public class PagoController implements Initializable {
         }
     }
 
-    private void mostrarMensaje(String texto, boolean error) {
+    private void mostrarMensaje(String texto) {
         lblMensajePago.setText(texto);
-        lblMensajePago.setTextFill(error ? Color.CRIMSON : Color.GREEN);
+        lblMensajePago.setTextFill(true ? Color.CRIMSON : Color.GREEN);
         lblMensajePago.setVisible(true);
         lblMensajePago.setManaged(true);
     }

@@ -13,7 +13,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -27,21 +26,54 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX de la pantalla de selección de servicios adicionales (extras) y
+ * creación de la orden de compra.
+ *
+ * <p>Muestra el resumen del pedido (evento, zona, cantidad) y cinco {@code CheckBox} para
+ * los decoradores disponibles: VIP, Seguro de Cancelación, Parqueadero, Merchandising y
+ * Acceso Preferencial. El total se recalcula en tiempo real al marcar/desmarcar cada extra,
+ * usando las constantes de costo de los decoradores como fuente de verdad.</p>
+ *
+ * <p>Al pulsar "Ir a Pagar", llama a {@link PlataformaFacade#crearOrdenCompra} que aplica
+ * la Strategy de asignación, envuelve cada entrada con los decoradores seleccionados
+ * (Patrón Decorator) y devuelve la {@link Compra} en estado CREADA. Esta se deposita en
+ * {@link SessionManager} y se navega a {@code PagoView}.</p>
+ *
+ * <p>[Requerimiento: RF-004] - Permite al usuario elegir servicios adicionales (decoradores)
+ * para cada entrada; el precio se acumula por entrada seleccionada.</p>
+ * <p>[Requerimiento: RF-005] - Inicia el proceso de pago al crear la orden y navegar a la
+ * vista de pago.</p>
+ * <p>[Patrón: Decorator] - Construye la lista de nombres de extras que la fachada usará para
+ * envolver las entradas con los decoradores correspondientes.</p>
+ * <p>[Patrón: Facade] - Delega a {@link PlataformaFacade#crearOrdenCompra} la asignación de
+ * cupos, aplicación de decoradores y creación del objeto {@link Compra}.</p>
+ */
 public class CheckoutExtrasController implements Initializable {
 
     private final PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
 
     // --- COMPONENTES FXML ---
-    @FXML private Label    lblResumen;
-    @FXML private Label    lblSubtotal;
-    @FXML private Label    lblTotal;
-    @FXML private CheckBox chkVip;
-    @FXML private CheckBox chkSeguro;
-    @FXML private CheckBox chkParqueadero;
-    @FXML private CheckBox chkMerchandising;
-    @FXML private CheckBox chkAccesoPreferencial;
-    @FXML private Button   btnCancelar;
-    @FXML private Button   btnIrAPagar;
+    @FXML
+    private Label lblResumen;
+    @FXML
+    private Label lblSubtotal;
+    @FXML
+    private Label lblTotal;
+    @FXML
+    private CheckBox chkVip;
+    @FXML
+    private CheckBox chkSeguro;
+    @FXML
+    private CheckBox chkParqueadero;
+    @FXML
+    private CheckBox chkMerchandising;
+    @FXML
+    private CheckBox chkAccesoPreferencial;
+    @FXML
+    private Button btnCancelar;
+    @FXML
+    private Button btnIrAPagar;
 
     private double subtotalEntradas;
 
@@ -69,13 +101,13 @@ public class CheckoutExtrasController implements Initializable {
     // --- HANDLERS ---
 
     @FXML
-    public void onCancelarClick(ActionEvent event) {
+    public void onCancelarClick() {
         Stage stage = (Stage) btnCancelar.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("AsignacionView.fxml", stage);
     }
 
     @FXML
-    public void onIrAPagarClick(ActionEvent event) {
+    public void onIrAPagarClick() {
         SessionManager sesion = SessionManager.getInstance();
         Evento evento = sesion.getEventoSeleccionado();
         Zona zona = sesion.getZonaSeleccionada();
@@ -112,20 +144,20 @@ public class CheckoutExtrasController implements Initializable {
         double total = subtotalEntradas;
         // Los decoradores son la fuente de verdad del costo de cada extra; cada
         // entrada paga el extra individualmente, igual que en la fachada al crear la orden.
-        if (chkVip.isSelected())              total += PaqueteVIPDecorator.COSTO * cantidad;
-        if (chkSeguro.isSelected())           total += SeguroCancelacionDecorator.COSTO_DEFAULT * cantidad;
-        if (chkParqueadero.isSelected())      total += ParqueaderoDecorator.COSTO * cantidad;
-        if (chkMerchandising.isSelected())    total += MerchandisingDecorator.COSTO * cantidad;
+        if (chkVip.isSelected()) total += PaqueteVIPDecorator.COSTO * cantidad;
+        if (chkSeguro.isSelected()) total += SeguroCancelacionDecorator.COSTO_DEFAULT * cantidad;
+        if (chkParqueadero.isSelected()) total += ParqueaderoDecorator.COSTO * cantidad;
+        if (chkMerchandising.isSelected()) total += MerchandisingDecorator.COSTO * cantidad;
         if (chkAccesoPreferencial.isSelected()) total += AccesoPreferencialDecorator.COSTO * cantidad;
         lblTotal.setText(String.format("Total a Pagar: $%,.0f", total));
     }
 
     private List<String> getExtrasSeleccionados() {
         List<String> extras = new ArrayList<>();
-        if (chkVip.isSelected())              extras.add("VIP");
-        if (chkSeguro.isSelected())           extras.add("SEGURO_CANCELACION");
-        if (chkParqueadero.isSelected())      extras.add("PARQUEADERO");
-        if (chkMerchandising.isSelected())    extras.add("MERCHANDISING");
+        if (chkVip.isSelected()) extras.add("VIP");
+        if (chkSeguro.isSelected()) extras.add("SEGURO_CANCELACION");
+        if (chkParqueadero.isSelected()) extras.add("PARQUEADERO");
+        if (chkMerchandising.isSelected()) extras.add("MERCHANDISING");
         if (chkAccesoPreferencial.isSelected()) extras.add("ACCESO_PREFERENCIAL");
         return extras;
     }

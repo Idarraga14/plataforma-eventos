@@ -10,7 +10,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Zona;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -29,13 +28,34 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX del gestor visual de asientos por evento para el administrador.
+ *
+ * <p>Filtra los eventos con zonas numeradas y muestra, al seleccionar uno, una cuadrícula
+ * de botones coloreados por estado del inventario comercial ({@code AsientoEvento}):
+ * verde = DISPONIBLE, naranja = BLOQUEADO, rojo = VENDIDO (deshabilitado).</p>
+ *
+ * <p>Al hacer clic en un asiento no vendido, el administrador puede bloquearlo o liberarlo
+ * con confirmación. La acción se delega a
+ * {@link AdministracionFacade#bloquearAsientoEnEvento} /
+ * {@link AdministracionFacade#habilitarAsientoEnEvento}, que mutan sólo el
+ * {@code AsientoEvento} del evento seleccionado sin afectar otros eventos.</p>
+ *
+ * <p>[Requerimiento: RF-018] - Implementa la gestión por evento del administrador:
+ * bloquear/liberar asientos en el inventario comercial de una función específica.</p>
+ * <p>[Patrón: Facade] - Las mutaciones sobre el inventario se delegan a
+ * {@link AdministracionFacade}, respetando la capa de aplicación.</p>
+ */
 public class AdminGestorAsientosController implements Initializable {
 
     private final AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
 
-    @FXML private ComboBox<Evento> comboEventos;
-    @FXML private VBox             panelZonas;
-    @FXML private Label            lblEstado;
+    @FXML
+    private ComboBox<Evento> comboEventos;
+    @FXML
+    private VBox panelZonas;
+    @FXML
+    private Label lblEstado;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,13 +67,20 @@ public class AdminGestorAsientosController implements Initializable {
 
         comboEventos.setItems(FXCollections.observableArrayList(conAsientos));
         comboEventos.setConverter(new StringConverter<>() {
-            @Override public String toString(Evento e)    { return e == null ? "" : e.getNombre(); }
-            @Override public Evento fromString(String s) { return null; }
+            @Override
+            public String toString(Evento e) {
+                return e == null ? "" : e.getNombre();
+            }
+
+            @Override
+            public Evento fromString(String s) {
+                return null;
+            }
         });
     }
 
     @FXML
-    public void onEventoSeleccionado(ActionEvent event) {
+    public void onEventoSeleccionado() {
         Evento eventoSel = comboEventos.getValue();
         panelZonas.getChildren().clear();
 
@@ -79,7 +106,10 @@ public class AdminGestorAsientosController implements Initializable {
                 Button btn = crearBotonAsiento(asiento, ae, eventoSel);
                 grid.add(btn, col, fila);
                 col++;
-                if (col == 10) { col = 0; fila++; }
+                if (col == 10) {
+                    col = 0;
+                    fila++;
+                }
             }
 
             VBox bloque = new VBox(4, lblZona, grid);
@@ -126,9 +156,9 @@ public class AdminGestorAsientosController implements Initializable {
     private void aplicarEstilo(Button btn, AsientoEstado estado) {
         String color = switch (estado) {
             case DISPONIBLE -> "#27ae60";
-            case BLOQUEADO  -> "#e67e22";
-            case VENDIDO    -> "#e74c3c";
-            default         -> "#95a5a6";
+            case BLOQUEADO -> "#e67e22";
+            case VENDIDO -> "#e74c3c";
+            default -> "#95a5a6";
         };
         btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-cursor: hand;");
     }
@@ -141,15 +171,47 @@ public class AdminGestorAsientosController implements Initializable {
     }
 
     // --- Navegación ---
-    @FXML public void onNavDashboard(ActionEvent e)  { navegar("AdminDashboardView.fxml"); }
-    @FXML public void onNavEventos(ActionEvent e)    { navegar("AdminEventosView.fxml"); }
-    @FXML public void onNavRecintos(ActionEvent e)   { navegar("AdminRecintosView.fxml"); }
-    @FXML public void onNavUsuarios(ActionEvent e)   { navegar("AdminUsuariosView.fxml"); }
-    @FXML public void onNavCompras(ActionEvent e)    { navegar("AdminComprasView.fxml"); }
-    @FXML public void onNavAsientos(ActionEvent e)   { }
-    @FXML public void onNavReportes(ActionEvent e)   { navegar("AdminReportesView.fxml"); }
-    @FXML public void onNavIncidencias(ActionEvent e){ navegar("AdminIncidenciasView.fxml"); }
-    @FXML public void onCerrarSesion(ActionEvent e) {
+    @FXML
+    public void onNavDashboard() {
+        navegar("AdminDashboardView.fxml");
+    }
+
+    @FXML
+    public void onNavEventos() {
+        navegar("AdminEventosView.fxml");
+    }
+
+    @FXML
+    public void onNavRecintos() {
+        navegar("AdminRecintosView.fxml");
+    }
+
+    @FXML
+    public void onNavUsuarios() {
+        navegar("AdminUsuariosView.fxml");
+    }
+
+    @FXML
+    public void onNavCompras() {
+        navegar("AdminComprasView.fxml");
+    }
+
+    @FXML
+    public void onNavAsientos() {
+    }
+
+    @FXML
+    public void onNavReportes() {
+        navegar("AdminReportesView.fxml");
+    }
+
+    @FXML
+    public void onNavIncidencias() {
+        navegar("AdminIncidenciasView.fxml");
+    }
+
+    @FXML
+    public void onCerrarSesion() {
         SessionManager.getInstance().logout();
         Stage stage = (Stage) comboEventos.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);

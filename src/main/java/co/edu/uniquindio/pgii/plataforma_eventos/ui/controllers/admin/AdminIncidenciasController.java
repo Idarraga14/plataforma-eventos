@@ -8,10 +8,8 @@ import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -24,26 +22,48 @@ import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX del módulo de registro y consulta de incidencias operativas.
+ *
+ * <p>Presenta un formulario de alta de incidencias (tipo de entidad afectada, ID de entidad,
+ * reportado por, descripción) y una tabla de historial de todas las incidencias registradas.
+ * El campo "Reportado por" se pre-rellena con el nombre del administrador en sesión.
+ * Al registrar, delega a {@link AdministracionFacade#registrarIncidencia} y refresca la tabla.</p>
+ *
+ * <p>[Requerimiento: RF-019] - Implementa el registro de incidencias operativas ligadas a
+ * entidades del dominio (EVENTO, COMPRA, USUARIO) y la consulta del historial completo.</p>
+ * <p>[Patrón: Facade] - Las operaciones de alta y consulta de incidencias se delegan a
+ * {@link AdministracionFacade}, sin acceso directo al repositorio.</p>
+ */
 public class AdminIncidenciasController implements Initializable {
 
     private static final DateTimeFormatter FECHA_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    private AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
+    private final AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
 
-    @FXML private ComboBox<IncidenciaEntidadAfectada> comboEntidadAfectada;
-    @FXML private TextField                           txtIdEntidad;
-    @FXML private TextField                           txtReportadoPor;
-    @FXML private TextArea                            txtDescripcion;
-    @FXML private Label                               lblMensajeIncidencia;
-    @FXML private Button                              btnLimpiarIncidencia;
-    @FXML private Button                              btnRegistrarIncidencia;
+    @FXML
+    private ComboBox<IncidenciaEntidadAfectada> comboEntidadAfectada;
+    @FXML
+    private TextField txtIdEntidad;
+    @FXML
+    private TextField txtReportadoPor;
+    @FXML
+    private TextArea txtDescripcion;
+    @FXML
+    private Label lblMensajeIncidencia;
 
-    @FXML private TableView<Incidencia>                tblIncidencias;
-    @FXML private TableColumn<Incidencia, String>      colFecha;
-    @FXML private TableColumn<Incidencia, String>      colEntidad;
-    @FXML private TableColumn<Incidencia, String>      colIdEntidad;
-    @FXML private TableColumn<Incidencia, String>      colReportadoPor;
-    @FXML private TableColumn<Incidencia, String>      colDescripcion;
+    @FXML
+    private TableView<Incidencia> tblIncidencias;
+    @FXML
+    private TableColumn<Incidencia, String> colFecha;
+    @FXML
+    private TableColumn<Incidencia, String> colEntidad;
+    @FXML
+    private TableColumn<Incidencia, String> colIdEntidad;
+    @FXML
+    private TableColumn<Incidencia, String> colReportadoPor;
+    @FXML
+    private TableColumn<Incidencia, String> colDescripcion;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -62,10 +82,8 @@ public class AdminIncidenciasController implements Initializable {
         cargarHistorial();
     }
 
-    public void setAdministracionFacade(AdministracionFacade f) { this.administracionFacade = f; }
-
     @FXML
-    public void onRegistrarIncidenciaClick(ActionEvent event) {
+    public void onRegistrarIncidenciaClick() {
         IncidenciaEntidadAfectada ent = comboEntidadAfectada.getValue();
         String idEnt = safe(txtIdEntidad.getText());
         String rep = safe(txtReportadoPor.getText());
@@ -85,22 +103,57 @@ public class AdminIncidenciasController implements Initializable {
     }
 
     @FXML
-    public void onLimpiarIncidenciaClick(ActionEvent event) { limpiarFormulario(); }
+    public void onLimpiarIncidenciaClick() {
+        limpiarFormulario();
+    }
 
     // --- Navegación ---
-    @FXML public void onNavDashboard(ActionEvent e) { navegar("AdminDashboardView.fxml"); }
-    @FXML public void onNavEventos(ActionEvent e) { navegar("AdminEventosView.fxml"); }
-    @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
-    @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
-    @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
-    @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
-    @FXML public void onNavReportes(ActionEvent e) { navegar("AdminReportesView.fxml"); }
-    @FXML public void onNavIncidencias(ActionEvent e) { }
-    @FXML public void onCerrarSesion(ActionEvent e) {
+    @FXML
+    public void onNavDashboard() {
+        navegar("AdminDashboardView.fxml");
+    }
+
+    @FXML
+    public void onNavEventos() {
+        navegar("AdminEventosView.fxml");
+    }
+
+    @FXML
+    public void onNavRecintos() {
+        navegar("AdminRecintosView.fxml");
+    }
+
+    @FXML
+    public void onNavUsuarios() {
+        navegar("AdminUsuariosView.fxml");
+    }
+
+    @FXML
+    public void onNavCompras() {
+        navegar("AdminComprasView.fxml");
+    }
+
+    @FXML
+    public void onNavAsientos() {
+        navegar("AdminGestorAsientosView.fxml");
+    }
+
+    @FXML
+    public void onNavReportes() {
+        navegar("AdminReportesView.fxml");
+    }
+
+    @FXML
+    public void onNavIncidencias() {
+    }
+
+    @FXML
+    public void onCerrarSesion() {
         SessionManager.getInstance().logout();
         Stage stage = (Stage) tblIncidencias.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
     }
+
     private void navegar(String fxml) {
         Stage stage = (Stage) tblIncidencias.getScene().getWindow();
         ViewNavigator.cargarVistaAdmin(fxml, stage);
@@ -127,5 +180,7 @@ public class AdminIncidenciasController implements Initializable {
         lblMensajeIncidencia.setManaged(true);
     }
 
-    private String safe(String s) { return s == null ? "" : s.trim(); }
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
+    }
 }

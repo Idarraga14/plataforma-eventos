@@ -26,6 +26,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX de la pantalla de selección de zona/asiento para la compra.
+ *
+ * <p>Según la categoría del evento ({@code TEATRO}/{@code CONFERENCIA} vs {@code CONCIERTO}),
+ * muestra uno de dos modos:</p>
+ * <ul>
+ *   <li><strong>Modo asientos numerados</strong>: dibuja una cuadrícula {@link GridPane} con un
+ *       botón por cada {@link co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Asiento};
+ *       el color se obtiene del inventario comercial del evento
+ *       ({@link Evento#obtenerAsientoEvento(String)}) — verde = DISPONIBLE, rojo = no disponible.</li>
+ *   <li><strong>Modo zona libre</strong>: muestra un {@code ComboBox} numérico para elegir
+ *       la cantidad de entradas (1–{@link #MAX_ENTRADAS}).</li>
+ * </ul>
+ * <p>Al confirmar, deposita zona, asientos y cantidad en {@link SessionManager} y navega
+ * al {@code CheckoutExtrasView}.</p>
+ *
+ * <p>[Requerimiento: RF-003] - Implementa la selección de zona y asiento numerado por el
+ * usuario, incluyendo la regla anti-reventa (máximo {@value #MAX_ENTRADAS} entradas).</p>
+ * <p>[Requerimiento: RF-018] - Consulta el inventario comercial ({@code AsientoEvento})
+ * del evento concreto para colorear correctamente las sillas, sin depender del estado físico
+ * del recinto.</p>
+ * <p>[Patrón: Strategy] - La estrategia de asignación (por zona o por asiento) se determina
+ * implícitamente aquí por la categoría; la lógica formal se ejecuta en la Facade/Strategy
+ * al llamar a {@code crearOrdenCompra}.</p>
+ */
 public class AsignacionController implements Initializable {
 
     @FXML

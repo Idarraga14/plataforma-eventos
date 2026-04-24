@@ -10,11 +10,9 @@ import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -28,36 +26,66 @@ import javafx.util.StringConverter;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX del módulo de gestión de eventos para el administrador.
+ *
+ * <p>Presenta un formulario dual (alta/edición) y un {@link TableView} con todos los eventos
+ * del sistema. Permite:</p>
+ * <ul>
+ *   <li><strong>Crear</strong>: construye un nuevo {@link Evento} via
+ *       {@link AdministracionFacade#crearEvento} (que invoca internamente el {@code EventoBuilder}).</li>
+ *   <li><strong>Editar</strong>: en modo edición sólo permite cambiar el estado del evento
+ *       (los campos estructurales se deshabilitan) vía {@code actualizarEstadoEvento}.</li>
+ *   <li><strong>Eliminar</strong>: solicita confirmación y delega a {@code eliminarEvento}.</li>
+ * </ul>
+ *
+ * <p>[Requerimiento: RF-012] - Implementa la creación de eventos con todos sus atributos.</p>
+ * <p>[Requerimiento: RF-014] - Permite cambiar el estado del evento (BORRADOR, PUBLICADO,
+ * PAUSADO, CANCELADO, FINALIZADO) desde el formulario de edición.</p>
+ * <p>[Patrón: Builder] - La creación de eventos se delega a {@link AdministracionFacade#crearEvento},
+ * que internamente usa {@code Evento.EventoBuilder} para validar campos obligatorios.</p>
+ * <p>[Patrón: Facade] - Todas las operaciones CRUD se realizan a través de
+ * {@link AdministracionFacade}, sin acceso directo al repositorio.</p>
+ */
 public class AdminEventosController implements Initializable {
 
     private static final DateTimeFormatter FECHA_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    private AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
+    private final AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
 
-    @FXML private Label                     lblModoFormulario;
-    @FXML private TextField                 txtNombreEvento;
-    @FXML private ComboBox<EventoCategoria> comboCategoria;
-    @FXML private DatePicker                dtpFechaEvento;
-    @FXML private TextField                 txtCiudad;
-    @FXML private ComboBox<Recinto>         comboRecinto;
-    @FXML private ComboBox<EventoEstado>    comboEstado;
-    @FXML private TextArea                  txtDescripcion;
-    @FXML private Button                    btnLimpiarFormulario;
-    @FXML private Button                    btnGuardarEvento;
+    @FXML
+    private Label lblModoFormulario;
+    @FXML
+    private TextField txtNombreEvento;
+    @FXML
+    private ComboBox<EventoCategoria> comboCategoria;
+    @FXML
+    private DatePicker dtpFechaEvento;
+    @FXML
+    private TextField txtCiudad;
+    @FXML
+    private ComboBox<Recinto> comboRecinto;
+    @FXML
+    private ComboBox<EventoEstado> comboEstado;
+    @FXML
+    private TextArea txtDescripcion;
 
-    @FXML private TableView<Evento>           tblEventos;
-    @FXML private TableColumn<Evento, String> colNombre;
-    @FXML private TableColumn<Evento, String> colCategoria;
-    @FXML private TableColumn<Evento, String> colFecha;
-    @FXML private TableColumn<Evento, String> colCiudad;
-    @FXML private TableColumn<Evento, String> colEstado;
-    @FXML private Button                      btnEditarEvento;
-    @FXML private Button                      btnEliminarEvento;
+    @FXML
+    private TableView<Evento> tblEventos;
+    @FXML
+    private TableColumn<Evento, String> colNombre;
+    @FXML
+    private TableColumn<Evento, String> colCategoria;
+    @FXML
+    private TableColumn<Evento, String> colFecha;
+    @FXML
+    private TableColumn<Evento, String> colCiudad;
+    @FXML
+    private TableColumn<Evento, String> colEstado;
 
     private Evento eventoEnEdicion = null;
 
@@ -67,8 +95,15 @@ public class AdminEventosController implements Initializable {
         comboEstado.setItems(FXCollections.observableArrayList(EventoEstado.values()));
         comboRecinto.setItems(FXCollections.observableArrayList(administracionFacade.listarRecintos()));
         comboRecinto.setConverter(new StringConverter<>() {
-            @Override public String toString(Recinto r) { return r == null ? "" : r.getNombre(); }
-            @Override public Recinto fromString(String s) { return null; }
+            @Override
+            public String toString(Recinto r) {
+                return r == null ? "" : r.getNombre();
+            }
+
+            @Override
+            public Recinto fromString(String s) {
+                return null;
+            }
         });
 
         colNombre.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombre()));
@@ -80,10 +115,8 @@ public class AdminEventosController implements Initializable {
         cargarEventos();
     }
 
-    public void setAdministracionFacade(AdministracionFacade f) { this.administracionFacade = f; }
-
     @FXML
-    public void onGuardarEventoClick(ActionEvent event) {
+    public void onGuardarEventoClick() {
         try {
             String nombre = txtNombreEvento.getText();
             EventoCategoria cat = comboCategoria.getValue();
@@ -116,12 +149,17 @@ public class AdminEventosController implements Initializable {
     }
 
     @FXML
-    public void onLimpiarFormularioClick(ActionEvent event) { limpiarFormulario(); }
+    public void onLimpiarFormularioClick() {
+        limpiarFormulario();
+    }
 
     @FXML
-    public void onEditarEventoClick(ActionEvent event) {
+    public void onEditarEventoClick() {
         Evento sel = tblEventos.getSelectionModel().getSelectedItem();
-        if (sel == null) { mostrarError("Selecciona un evento para editar."); return; }
+        if (sel == null) {
+            mostrarError("Selecciona un evento para editar.");
+            return;
+        }
         eventoEnEdicion = sel;
         lblModoFormulario.setText("Editar Evento (sólo estado editable)");
         txtNombreEvento.setText(sel.getNombre());
@@ -140,9 +178,12 @@ public class AdminEventosController implements Initializable {
     }
 
     @FXML
-    public void onEliminarEventoClick(ActionEvent event) {
+    public void onEliminarEventoClick() {
         Evento sel = tblEventos.getSelectionModel().getSelectedItem();
-        if (sel == null) { mostrarError("Selecciona un evento."); return; }
+        if (sel == null) {
+            mostrarError("Selecciona un evento.");
+            return;
+        }
         Alert a = new Alert(Alert.AlertType.CONFIRMATION,
                 "¿Eliminar el evento '" + sel.getNombre() + "'?", ButtonType.YES, ButtonType.NO);
         a.setHeaderText(null);
@@ -158,19 +199,52 @@ public class AdminEventosController implements Initializable {
     }
 
     // --- Navegación ---
-    @FXML public void onNavDashboard(ActionEvent e) { navegar("AdminDashboardView.fxml"); }
-    @FXML public void onNavEventos(ActionEvent e) { }
-    @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
-    @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
-    @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
-    @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
-    @FXML public void onNavReportes(ActionEvent e) { navegar("AdminReportesView.fxml"); }
-    @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
-    @FXML public void onCerrarSesion(ActionEvent e) {
+    @FXML
+    public void onNavDashboard() {
+        navegar("AdminDashboardView.fxml");
+    }
+
+    @FXML
+    public void onNavEventos() {
+    }
+
+    @FXML
+    public void onNavRecintos() {
+        navegar("AdminRecintosView.fxml");
+    }
+
+    @FXML
+    public void onNavUsuarios() {
+        navegar("AdminUsuariosView.fxml");
+    }
+
+    @FXML
+    public void onNavCompras() {
+        navegar("AdminComprasView.fxml");
+    }
+
+    @FXML
+    public void onNavAsientos() {
+        navegar("AdminGestorAsientosView.fxml");
+    }
+
+    @FXML
+    public void onNavReportes() {
+        navegar("AdminReportesView.fxml");
+    }
+
+    @FXML
+    public void onNavIncidencias() {
+        navegar("AdminIncidenciasView.fxml");
+    }
+
+    @FXML
+    public void onCerrarSesion() {
         SessionManager.getInstance().logout();
         Stage stage = (Stage) tblEventos.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
     }
+
     private void navegar(String fxml) {
         Stage stage = (Stage) tblEventos.getScene().getWindow();
         ViewNavigator.cargarVistaAdmin(fxml, stage);
@@ -184,17 +258,25 @@ public class AdminEventosController implements Initializable {
     private void limpiarFormulario() {
         eventoEnEdicion = null;
         lblModoFormulario.setText("Nuevo Evento");
-        txtNombreEvento.clear(); txtNombreEvento.setDisable(false);
-        comboCategoria.setValue(null); comboCategoria.setDisable(false);
-        dtpFechaEvento.setValue(null); dtpFechaEvento.setDisable(false);
-        txtCiudad.clear(); txtCiudad.setDisable(false);
-        comboRecinto.setValue(null); comboRecinto.setDisable(false);
+        txtNombreEvento.clear();
+        txtNombreEvento.setDisable(false);
+        comboCategoria.setValue(null);
+        comboCategoria.setDisable(false);
+        dtpFechaEvento.setValue(null);
+        dtpFechaEvento.setDisable(false);
+        txtCiudad.clear();
+        txtCiudad.setDisable(false);
+        comboRecinto.setValue(null);
+        comboRecinto.setDisable(false);
         comboEstado.setValue(null);
-        txtDescripcion.clear(); txtDescripcion.setDisable(false);
+        txtDescripcion.clear();
+        txtDescripcion.setDisable(false);
     }
 
     private void mostrarError(String m) {
         Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setHeaderText(null); a.setContentText(m); a.showAndWait();
+        a.setHeaderText(null);
+        a.setContentText(m);
+        a.showAndWait();
     }
 }

@@ -35,26 +35,39 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador JavaFX del módulo de gestión de recintos para el administrador.
+ *
+ * <p>Lista los recintos registrados con columnas de aforo total y número de zonas.
+ * Permite crear nuevos recintos mediante diálogos secuenciales de texto, eliminarlos
+ * con confirmación y gestionar sus zonas a través de un modal que lista las zonas
+ * existentes y permite añadir nuevas (nombre, capacidad, precio base).
+ * El doble clic sobre una fila abre directamente el modal de zonas.</p>
+ *
+ * <p>[Requerimiento: RF-013] - Implementa la gestión completa de recintos físicos
+ * (crear, eliminar) y la administración de sus zonas (agregar zonas con asientos/capacidad).</p>
+ * <p>[Patrón: Facade] - Delega todas las operaciones sobre recintos y zonas a
+ * {@link AdministracionFacade}, sin manipular directamente las listas del repositorio.</p>
+ */
 public class AdminRecintosController implements Initializable {
 
-    private AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
+    private final AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
 
-    @FXML private TextField                     txtBuscarRecinto;
-    @FXML private Button                        btnBuscarRecinto;
+    @FXML
+    private TextField txtBuscarRecinto;
 
-    @FXML private TableView<Recinto>            tblRecintos;
-    @FXML private TableColumn<Recinto, String>  colNombreRecinto;
-    @FXML private TableColumn<Recinto, String>  colDireccion;
-    @FXML private TableColumn<Recinto, String>  colCiudad;
-    @FXML private TableColumn<Recinto, Integer> colAforo;
-    @FXML private TableColumn<Recinto, Integer> colZonas;
-
-    @FXML private Button btnCrearRecinto;
-    @FXML private Button btnEditarRecinto;
-    @FXML private Button btnEliminarRecinto;
-    @FXML private Button btnAbrirModalAsientos;
-
-    @FXML private Label  lblHintDobleClick;
+    @FXML
+    private TableView<Recinto> tblRecintos;
+    @FXML
+    private TableColumn<Recinto, String> colNombreRecinto;
+    @FXML
+    private TableColumn<Recinto, String> colDireccion;
+    @FXML
+    private TableColumn<Recinto, String> colCiudad;
+    @FXML
+    private TableColumn<Recinto, Integer> colAforo;
+    @FXML
+    private TableColumn<Recinto, Integer> colZonas;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -67,9 +80,10 @@ public class AdminRecintosController implements Initializable {
         cargarRecintos();
     }
 
-    public void setAdministracionFacade(AdministracionFacade f) { this.administracionFacade = f; }
-
-    @FXML public void onBuscarRecintoAction(ActionEvent e) { onBuscarRecintoClick(e); }
+    @FXML
+    public void onBuscarRecintoAction(ActionEvent e) {
+        onBuscarRecintoClick(e);
+    }
 
     @FXML
     public void onBuscarRecintoClick(ActionEvent event) {
@@ -81,12 +95,12 @@ public class AdminRecintosController implements Initializable {
     }
 
     @FXML
-    public void onCrearRecintoClick(ActionEvent event) {
-        String nombre = pedirTexto("Crear Recinto", "Nombre del recinto:");
+    public void onCrearRecintoClick() {
+        String nombre = pedirTexto("Nombre del recinto:");
         if (nombre == null || nombre.isBlank()) return;
-        String direccion = pedirTexto("Crear Recinto", "Dirección:");
+        String direccion = pedirTexto("Dirección:");
         if (direccion == null) return;
-        String ciudad = pedirTexto("Crear Recinto", "Ciudad:");
+        String ciudad = pedirTexto("Ciudad:");
         if (ciudad == null) return;
         try {
             administracionFacade.crearRecinto(nombre, direccion, ciudad);
@@ -97,14 +111,17 @@ public class AdminRecintosController implements Initializable {
     }
 
     @FXML
-    public void onEditarRecintoClick(ActionEvent event) {
-        mostrarInfo("La edición de recintos no está habilitada. Elimina y vuelve a crear si es necesario.");
+    public void onEditarRecintoClick() {
+        mostrarInfo();
     }
 
     @FXML
-    public void onEliminarRecintoClick(ActionEvent event) {
+    public void onEliminarRecintoClick() {
         Recinto sel = tblRecintos.getSelectionModel().getSelectedItem();
-        if (sel == null) { mostrarError("Selecciona un recinto."); return; }
+        if (sel == null) {
+            mostrarError("Selecciona un recinto.");
+            return;
+        }
         Alert a = new Alert(Alert.AlertType.CONFIRMATION,
                 "¿Eliminar el recinto '" + sel.getNombre() + "'?", ButtonType.YES, ButtonType.NO);
         a.setHeaderText(null);
@@ -119,31 +136,67 @@ public class AdminRecintosController implements Initializable {
     }
 
     @FXML
-    public void onAbrirModalAsientos(ActionEvent event) {
+    public void onAbrirModalAsientos() {
         Recinto sel = tblRecintos.getSelectionModel().getSelectedItem();
-        if (sel == null) { mostrarError("Selecciona un recinto."); return; }
+        if (sel == null) {
+            mostrarError("Selecciona un recinto.");
+            return;
+        }
         abrirModalZonas(sel);
     }
 
     @FXML
     public void onTablaRecintoClick(MouseEvent event) {
-        if (event.getClickCount() == 2) onAbrirModalAsientos(null);
+        if (event.getClickCount() == 2) onAbrirModalAsientos();
     }
 
     // --- Navegación ---
-    @FXML public void onNavDashboard(ActionEvent e) { navegar("AdminDashboardView.fxml"); }
-    @FXML public void onNavEventos(ActionEvent e) { navegar("AdminEventosView.fxml"); }
-    @FXML public void onNavRecintos(ActionEvent e) { }
-    @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
-    @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
-    @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
-    @FXML public void onNavReportes(ActionEvent e) { navegar("AdminReportesView.fxml"); }
-    @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
-    @FXML public void onCerrarSesion(ActionEvent e) {
+    @FXML
+    public void onNavDashboard() {
+        navegar("AdminDashboardView.fxml");
+    }
+
+    @FXML
+    public void onNavEventos() {
+        navegar("AdminEventosView.fxml");
+    }
+
+    @FXML
+    public void onNavRecintos() {
+    }
+
+    @FXML
+    public void onNavUsuarios() {
+        navegar("AdminUsuariosView.fxml");
+    }
+
+    @FXML
+    public void onNavCompras() {
+        navegar("AdminComprasView.fxml");
+    }
+
+    @FXML
+    public void onNavAsientos() {
+        navegar("AdminGestorAsientosView.fxml");
+    }
+
+    @FXML
+    public void onNavReportes() {
+        navegar("AdminReportesView.fxml");
+    }
+
+    @FXML
+    public void onNavIncidencias() {
+        navegar("AdminIncidenciasView.fxml");
+    }
+
+    @FXML
+    public void onCerrarSesion() {
         SessionManager.getInstance().logout();
         Stage stage = (Stage) tblRecintos.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
     }
+
     private void navegar(String fxml) {
         Stage stage = (Stage) tblRecintos.getScene().getWindow();
         ViewNavigator.cargarVistaAdmin(fxml, stage);
@@ -161,9 +214,12 @@ public class AdminRecintosController implements Initializable {
         ListView<String> lvZonas = new ListView<>();
         refrescarLista(lvZonas, recinto);
 
-        TextField txtNombre = new TextField();      txtNombre.setPromptText("Nombre zona");
-        TextField txtCap = new TextField();         txtCap.setPromptText("Capacidad");
-        TextField txtPrecio = new TextField();      txtPrecio.setPromptText("Precio base");
+        TextField txtNombre = new TextField();
+        txtNombre.setPromptText("Nombre zona");
+        TextField txtCap = new TextField();
+        txtCap.setPromptText("Capacidad");
+        TextField txtPrecio = new TextField();
+        txtPrecio.setPromptText("Precio base");
         Button btnAgregar = new Button("Agregar zona");
         btnAgregar.setOnAction(e -> {
             try {
@@ -171,7 +227,9 @@ public class AdminRecintosController implements Initializable {
                 double precio = Double.parseDouble(txtPrecio.getText().trim());
                 administracionFacade.agregarZona(recinto.getIdRecinto(),
                         txtNombre.getText().trim(), cap, precio);
-                txtNombre.clear(); txtCap.clear(); txtPrecio.clear();
+                txtNombre.clear();
+                txtCap.clear();
+                txtPrecio.clear();
                 refrescarLista(lvZonas, recinto);
                 cargarRecintos();
             } catch (RuntimeException ex) {
@@ -194,16 +252,25 @@ public class AdminRecintosController implements Initializable {
                         .collect(Collectors.toList())));
     }
 
-    private String pedirTexto(String titulo, String prompt) {
+    private String pedirTexto(String prompt) {
         TextInputDialog d = new TextInputDialog();
-        d.setTitle(titulo); d.setHeaderText(null); d.setContentText(prompt);
+        d.setTitle("Crear Recinto");
+        d.setHeaderText(null);
+        d.setContentText(prompt);
         return d.showAndWait().orElse(null);
     }
 
     private void mostrarError(String m) {
-        Alert a = new Alert(Alert.AlertType.ERROR); a.setHeaderText(null); a.setContentText(m); a.showAndWait();
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setHeaderText(null);
+        a.setContentText(m);
+        a.showAndWait();
     }
-    private void mostrarInfo(String m) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION); a.setHeaderText(null); a.setContentText(m); a.showAndWait();
+
+    private void mostrarInfo() {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setHeaderText(null);
+        a.setContentText("La edición de recintos no está habilitada. Elimina y vuelve a crear si es necesario.");
+        a.showAndWait();
     }
 }

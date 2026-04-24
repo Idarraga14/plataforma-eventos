@@ -5,20 +5,27 @@ import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.Plat
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
+/**
+ * Controlador JavaFX de la pantalla de autenticación de usuarios.
+ *
+ * <p>Recoge las credenciales (correo y contraseña), las delega a {@link PlataformaFacade#login}
+ * y, según el rol del usuario devuelto, enruta al Dashboard de administración o a la vista de
+ * exploración de eventos. Ante credenciales inválidas muestra un {@code Alert} de error sin
+ * exponer detalles internos del sistema.</p>
+ *
+ * <p>[Requerimiento: RF-001] - Implementa la autenticación de usuarios y el enrutamiento
+ * diferenciado por rol (admin → {@code AdminDashboardView}, cliente → {@code ExplorarEventosView}).</p>
+ * <p>[Patrón: Facade] - Consume {@link PlataformaFacade} como punto de entrada único a la
+ * lógica de autenticación; el controlador no accede directamente al repositorio.</p>
+ */
 public class LoginController {
 
     // --- INYECCIÓN DE DEPENDENCIAS ---
@@ -31,15 +38,13 @@ public class LoginController {
     @FXML
     private PasswordField txtPassword;
     @FXML
-    private Label lblMensajeError;
-    @FXML
     private Button btnLogin;
     @FXML
     private Hyperlink btnIrARegistro;
 
     // --- HANDLERS DE EVENTOS ---
     @FXML
-    public void onLoginClick(ActionEvent event) {
+    public void onLoginClick() {
         String correo = txtCorreo.getText().trim();
         String password = txtPassword.getText();
 
@@ -85,7 +90,7 @@ public class LoginController {
     }
 
     @FXML
-    public void onIrARegistroClick(ActionEvent event) {
+    public void onIrARegistroClick() {
         Stage stage = (Stage) btnIrARegistro.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("RegistroView.fxml", stage);
     }

@@ -26,16 +26,50 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Genera un conjunto masivo y realista de datos de prueba, cubriendo casos borde
- * del Patrón State (Compra), Decorator (Entrada), Builder (Evento) y la separación
- * física/comercial de AsientoEvento.
+ * Poblador de datos de prueba que inyecta un conjunto masivo y realista de entidades
+ * al iniciar la aplicación, cubriendo todos los casos borde relevantes del dominio.
  *
- * NOTA SOBRE FECHAS DE COMPRA: el constructor de Compra fija la fecha a LocalDateTime.now(),
- * por lo que todas las compras del seeder quedan con la fecha de hoy. Para probar reportes
- * por período, el admin debe usar el rango "inicio del mes → hoy".
+ * <p>El seeder construye 5 tipos de entidades en orden estricto de dependencias:</p>
+ * <ol>
+ *   <li><strong>Usuarios</strong> (1 admin + 4 clientes con roles diferenciados)</li>
+ *   <li><strong>Recintos y Zonas</strong> (estadio de flujo libre + teatro con asientos numerados)</li>
+ *   <li><strong>Eventos</strong> (4 eventos en distintos estados del ciclo de vida)</li>
+ *   <li><strong>Compras</strong> (12 compras que ejercitan todos los estados del Patrón State
+ *       y todas las combinaciones del Patrón Decorator)</li>
+ *   <li><strong>Incidencias</strong> (3 incidencias con entidades afectadas distintas)</li>
+ * </ol>
+ *
+ * <p><strong>Nota sobre fechas de compra:</strong> el constructor de {@code Compra} fija la fecha
+ * a {@code LocalDateTime.now()}, por lo que todas las compras del seeder quedan con la fecha
+ * del arranque. Para probar reportes por período, el admin debe usar el rango "inicio del mes → hoy".</p>
+ *
+ * <p>[Requerimiento: RF-045] - Implementa la carga inicial de datos representativos que arrancan
+ * con la aplicación, cubriendo todos los patrones y estados del dominio para facilitar la
+ * evaluación del sistema sin necesidad de persistencia externa.</p>
+ * <p>[Patrón: Singleton] - Recibe y popula la instancia única de {@link PlataformaEventosSingleton};
+ * es invocado exclusivamente desde su constructor privado.</p>
+ * <p>[Patrón: Builder] - Usa {@code Evento.EventoBuilder} para construir los 4 eventos
+ * de prueba con validación de campos obligatorios.</p>
+ * <p>[Patrón: State] - Construye {@link co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Compra}
+ * en los 5 estados posibles (CREADA, PAGADA, CONFIRMADA, CANCELADA, REEMBOLSADA) para poblar
+ * el historial de compras con transiciones reales.</p>
+ * <p>[Patrón: Decorator] - Envuelve instancias de {@code EntradaZona} y {@code EntradaAsiento}
+ * con todos los decoradores disponibles (VIP, Seguro, Parqueadero, Merchandising, AccesoPreferencial),
+ * incluyendo cadenas de múltiples decoradores anidados.</p>
  */
 public class DatosPruebaSeeder {
 
+    /**
+     * Inyecta el conjunto completo de datos de prueba en el repositorio central.
+     *
+     * <p>Las secciones se ejecutan en orden estricto para respetar las dependencias entre entidades:
+     * Usuarios → Recintos → Eventos → Compras (que referencian Usuarios y Eventos) → Incidencias.</p>
+     *
+     * <p>[Requerimiento: RF-045] - Garantiza que el sistema arranque con datos representativos
+     * que cubran todos los patrones de uso esperados en producción.</p>
+     *
+     * @param db instancia única del repositorio central ({@link PlataformaEventosSingleton})
+     */
     public static void inyectarDatos(PlataformaEventosSingleton db) {
         System.out.println("[SEEDER] Iniciando carga masiva de datos de prueba...");
 

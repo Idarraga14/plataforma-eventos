@@ -5,7 +5,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.application.facade.usuario.Plat
 import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Usuario;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -14,6 +13,18 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+/**
+ * Controlador JavaFX de la pantalla de registro de nuevos usuarios.
+ *
+ * <p>Valida los campos localmente (campos obligatorios, confirmación de contraseña) y
+ * delega la creación de la cuenta a {@link PlataformaFacade#registrarUsuario}. Si el
+ * registro es exitoso, inicia la sesión automáticamente y navega a la vista de exploración.</p>
+ *
+ * <p>[Requerimiento: RF-001] - Implementa el flujo de alta de usuarios clientes;
+ * la cuenta se crea con {@code esAdmin = false}.</p>
+ * <p>[Patrón: Facade] - Delega en {@link PlataformaFacade} toda la validación de negocio
+ * (correo único, formato), aislando la UI de esas reglas.</p>
+ */
 public class RegistroController {
 
     private final PlataformaFacade facade = new PlataformaFacadeImpl();
@@ -27,7 +38,7 @@ public class RegistroController {
     @FXML private Hyperlink btnVolver;
 
     @FXML
-    public void onRegistrarClick(ActionEvent event) {
+    public void onRegistrarClick() {
         String nombre    = txtNombre.getText().trim();
         String correo    = txtCorreo.getText().trim();
         String telefono  = txtTelefono.getText().trim();
@@ -55,7 +66,7 @@ public class RegistroController {
     }
 
     @FXML
-    public void onVolverClick(ActionEvent event) {
+    public void onVolverClick() {
         Stage stage = (Stage) btnVolver.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
     }

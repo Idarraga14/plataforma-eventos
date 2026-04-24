@@ -7,7 +7,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.domain.model.Evento;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
@@ -25,30 +24,55 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX del panel de control administrativo (Dashboard).
+ *
+ * <p>Muestra métricas globales en tiempo real: eventos activos, ventas del mes, total de
+ * usuarios e incidencias abiertas; complementadas por tres gráficos (líneas de ingresos por
+ * mes, pastel de ocupación por zona del primer evento publicado, barras de ingresos por
+ * servicio adicional). Se auto-suscribe al {@code PlataformaEventosSingleton} como
+ * {@link EventoObserver} para recibir notificaciones de cambios de aforo y refrescar
+ * el dashboard automáticamente desde el hilo de JavaFX ({@link Platform#runLater}).</p>
+ *
+ * <p>[Requerimiento: RF-012] - Brinda al administrador una vista consolidada del estado
+ * operativo del sistema con métricas y gráficos de resumen.</p>
+ * <p>[Requerimiento: RF-016] - Muestra el total de ventas del período actual y los
+ * ingresos por servicio adicional requeridos por el reporte operativo.</p>
+ * <p>[Patrón: Observer] - Implementa {@link EventoObserver} (rol: <strong>Concrete Observer</strong>);
+ * {@code onAforoActualizado} se invoca por el Sujeto al modificar inventario de asientos,
+ * y usa {@code Platform.runLater} para garantizar la actualización en el hilo de UI.</p>
+ * <p>[Patrón: Facade] - Delega todas las consultas de métricas y gráficos a
+ * {@link AdministracionFacade} sin acceder directamente al repositorio.</p>
+ */
 public class AdminDashboardController implements Initializable, EventoObserver {
 
-    private AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
+    private final AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
 
-    @FXML private Label    lblEventosActivos;
-    @FXML private Label    lblVentasMes;
-    @FXML private Label    lblTotalUsuarios;
-    @FXML private Label    lblIncidenciasAbiertas;
+    @FXML
+    private Label lblEventosActivos;
+    @FXML
+    private Label lblVentasMes;
+    @FXML
+    private Label lblTotalUsuarios;
+    @FXML
+    private Label lblIncidenciasAbiertas;
 
-    @FXML private LineChart<String, Number> lineChartVentas;
-    @FXML private PieChart                  pieChartOcupacion;
-    @FXML private BarChart<String, Number>  barChartServicios;
+    @FXML
+    private LineChart<String, Number> lineChartVentas;
+    @FXML
+    private PieChart pieChartOcupacion;
+    @FXML
+    private BarChart<String, Number> barChartServicios;
 
-    @FXML private Label  lblUltimaActualizacion;
-    @FXML private Button btnRefrescar;
+    @FXML
+    private Label lblUltimaActualizacion;
+    @FXML
+    private Button btnRefrescar;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         administracionFacade.registrarObserver(this);
         cargarDashboard();
-    }
-
-    public void setAdministracionFacade(AdministracionFacade administracionFacade) {
-        this.administracionFacade = administracionFacade;
     }
 
     @Override
@@ -57,22 +81,54 @@ public class AdminDashboardController implements Initializable, EventoObserver {
     }
 
     @FXML
-    public void onRefrescarClick(ActionEvent event) {
+    public void onRefrescarClick() {
         cargarDashboard();
     }
 
     // --- Navegación ---
-    @FXML public void onNavDashboard(ActionEvent e) { }
-    @FXML public void onNavEventos(ActionEvent e) { navegar("AdminEventosView.fxml"); }
-    @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
-    @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
-    @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
-    @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
-    @FXML public void onNavReportes(ActionEvent e) { navegar("AdminReportesView.fxml"); }
-    @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
-    @FXML public void onCerrarSesion(ActionEvent e) {
+    @FXML
+    public void onNavDashboard() {
+    }
+
+    @FXML
+    public void onNavEventos() {
+        navegar("AdminEventosView.fxml");
+    }
+
+    @FXML
+    public void onNavRecintos() {
+        navegar("AdminRecintosView.fxml");
+    }
+
+    @FXML
+    public void onNavUsuarios() {
+        navegar("AdminUsuariosView.fxml");
+    }
+
+    @FXML
+    public void onNavCompras() {
+        navegar("AdminComprasView.fxml");
+    }
+
+    @FXML
+    public void onNavAsientos() {
+        navegar("AdminGestorAsientosView.fxml");
+    }
+
+    @FXML
+    public void onNavReportes() {
+        navegar("AdminReportesView.fxml");
+    }
+
+    @FXML
+    public void onNavIncidencias() {
+        navegar("AdminIncidenciasView.fxml");
+    }
+
+    @FXML
+    public void onCerrarSesion() {
         co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager.getInstance().logout();
-        navegarUsuario("LoginView.fxml");
+        navegarUsuario();
     }
 
     private void navegar(String fxml) {
@@ -80,9 +136,9 @@ public class AdminDashboardController implements Initializable, EventoObserver {
         ViewNavigator.cargarVistaAdmin(fxml, stage);
     }
 
-    private void navegarUsuario(String fxml) {
+    private void navegarUsuario() {
         Stage stage = (Stage) lblEventosActivos.getScene().getWindow();
-        ViewNavigator.cargarVistaUsuario(fxml, stage);
+        ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
     }
 
     // --- Carga de métricas ---

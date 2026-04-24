@@ -14,7 +14,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -36,30 +35,58 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX de la pantalla de historial de compras del usuario.
+ *
+ * <p>Lista todas las compras del usuario en sesión con filtros combinables (nombre de evento,
+ * rango de fechas, estado). Permite tres acciones sobre la compra seleccionada:</p>
+ * <ul>
+ *   <li><strong>Exportar PDF/CSV</strong>: genera el comprobante vía
+ *       {@link PlataformaFacade#generarComprobante} y abre un {@code FileChooser} para guardarlo
+ *       (solo compras PAGADAS o CONFIRMADAS).</li>
+ *   <li><strong>Cancelar compra</strong>: invoca {@link PlataformaFacade#cancelarOrdenCompra}
+ *       (solo compras CREADAS o PAGADAS).</li>
+ * </ul>
+ *
+ * <p>[Requerimiento: RF-009] - Implementa la exportación del comprobante de compra en PDF/CSV
+ *   usando el Adaptador concreto ({@code ExportadorPDFAdapter}/{@code ExportadorCSVAdapter}).</p>
+ * <p>[Requerimiento: RF-011] - Permite al usuario cancelar compras elegibles desde la UI.</p>
+ * <p>[Patrón: Adapter] - Desencadena el flujo de exportación mediante la fachada, que
+ *   selecciona el {@code ExportadorReporte} concreto según el {@code FormatoReporte}.</p>
+ * <p>[Patrón: Facade] - Todas las operaciones (listar, cancelar, exportar) se realizan
+ *   a través de {@link PlataformaFacade} sin acceder al repositorio.</p>
+ */
 public class HistorialComprasController implements Initializable {
 
     private static final DateTimeFormatter FECHA_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    private PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
+    private final PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
 
-    @FXML private TextField              txtBuscarEvento;
-    @FXML private DatePicker             dtpFechaDesde;
-    @FXML private DatePicker             dtpFechaHasta;
-    @FXML private ComboBox<CompraEstado> comboEstado;
-    @FXML private Button                 btnFiltrar;
-    @FXML private Button                 btnLimpiar;
+    @FXML
+    private TextField txtBuscarEvento;
+    @FXML
+    private DatePicker dtpFechaDesde;
+    @FXML
+    private DatePicker dtpFechaHasta;
+    @FXML
+    private ComboBox<CompraEstado> comboEstado;
 
-    @FXML private TableView<Compra>              tblCompras;
-    @FXML private TableColumn<Compra, String>    colIdCompra;
-    @FXML private TableColumn<Compra, String>    colEvento;
-    @FXML private TableColumn<Compra, String>    colFechaCompra;
-    @FXML private TableColumn<Compra, Double>    colTotal;
-    @FXML private TableColumn<Compra, String>    colEstadoCompra;
-    @FXML private TableColumn<Compra, Integer>   colEntradas;
-
-    @FXML private Button btnExportarPdf;
-    @FXML private Button btnExportarCsv;
-    @FXML private Button btnCancelarCompra;
+    @FXML
+    private TableView<Compra> tblCompras;
+    @FXML
+    private TableColumn<Compra, String> colIdCompra;
+    @FXML
+    private TableColumn<Compra, String> colEvento;
+    @FXML
+    private TableColumn<Compra, String> colFechaCompra;
+    @FXML
+    private TableColumn<Compra, Double> colTotal;
+    @FXML
+    private TableColumn<Compra, String> colEstadoCompra;
+    @FXML
+    private TableColumn<Compra, Integer> colEntradas;
+    @FXML
+    private Button btnCancelarCompra;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -77,12 +104,8 @@ public class HistorialComprasController implements Initializable {
         cargarHistorial();
     }
 
-    public void setPlataformaFacade(PlataformaFacade plataformaFacade) {
-        this.plataformaFacade = plataformaFacade;
-    }
-
     @FXML
-    public void onFiltrarClick(ActionEvent event) {
+    public void onFiltrarClick() {
         String texto = txtBuscarEvento.getText() == null ? "" : txtBuscarEvento.getText().trim().toLowerCase();
         LocalDate desde = dtpFechaDesde.getValue();
         LocalDate hasta = dtpFechaHasta.getValue();
@@ -102,7 +125,7 @@ public class HistorialComprasController implements Initializable {
     }
 
     @FXML
-    public void onLimpiarFiltrosClick(ActionEvent event) {
+    public void onLimpiarFiltrosClick() {
         txtBuscarEvento.clear();
         dtpFechaDesde.setValue(null);
         dtpFechaHasta.setValue(null);
@@ -111,17 +134,17 @@ public class HistorialComprasController implements Initializable {
     }
 
     @FXML
-    public void onExportarPdfClick(ActionEvent event) {
+    public void onExportarPdfClick() {
         exportarSeleccionada(FormatoReporte.PDF, "pdf", "Documento PDF (*.pdf)", "*.pdf");
     }
 
     @FXML
-    public void onExportarCsvClick(ActionEvent event) {
+    public void onExportarCsvClick() {
         exportarSeleccionada(FormatoReporte.CSV, "csv", "Archivo CSV (*.csv)", "*.csv");
     }
 
     @FXML
-    public void onCancelarCompraClick(ActionEvent event) {
+    public void onCancelarCompraClick() {
         Compra seleccionada = tblCompras.getSelectionModel().getSelectedItem();
         if (seleccionada == null) return;
 
@@ -143,24 +166,24 @@ public class HistorialComprasController implements Initializable {
     // --- NAVEGACIÓN ---
 
     @FXML
-    public void onNavEventos(ActionEvent event) {
+    public void onNavEventos() {
         Stage stage = (Stage) tblCompras.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("ExplorarEventosView.fxml", stage);
     }
 
     @FXML
-    public void onNavHistorial(ActionEvent event) {
+    public void onNavHistorial() {
         // ya estamos aquí
     }
 
     @FXML
-    public void onNavPerfil(ActionEvent event) {
+    public void onNavPerfil() {
         Stage stage = (Stage) tblCompras.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("PerfilUsuarioView.fxml", stage);
     }
 
     @FXML
-    public void onCerrarSesion(ActionEvent event) {
+    public void onCerrarSesion() {
         SessionManager.getInstance().logout();
         Stage stage = (Stage) tblCompras.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);

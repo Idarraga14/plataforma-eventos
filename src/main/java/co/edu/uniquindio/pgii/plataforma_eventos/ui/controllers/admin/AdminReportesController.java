@@ -8,7 +8,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.
 import co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte.ReporteOperativo;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -26,32 +25,64 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX del módulo de reportes operativos administrativos.
+ *
+ * <p>Permite al administrador definir un rango de fechas, consultar las métricas del período
+ * (ventas totales, número de compras, cancelaciones, tasa de cancelación, ingresos por cada
+ * servicio adicional, top de eventos por facturación) y exportar el reporte en PDF o CSV.</p>
+ *
+ * <p>La consulta delega a {@link AdministracionFacade#generarReporteOperativo}, que construye
+ * un {@link ReporteOperativo} DTO. La exportación instancia directamente el adaptador
+ * concreto ({@code ExportadorPDFAdminAdapter} o {@code ExportadorCSVAdminAdapter}) y
+ * abre un {@code FileChooser} para guardar el archivo.</p>
+ *
+ * <p>[Requerimiento: RF-046] - Implementa la generación y exportación del reporte operativo
+ * del administrador, con métricas de ventas, servicios adicionales y top eventos.</p>
+ * <p>[Patrón: Adapter] - Al exportar, crea el {@code ExportadorReporteAdmin} concreto
+ * (PDF o CSV) e invoca {@code exportar(ReporteOperativo)}, siguiendo el Patrón Adapter
+ * (Target → Adapter → serialización sin biblioteca externa).</p>
+ * <p>[Patrón: Facade] - La generación del reporte se delega a {@link AdministracionFacade},
+ * que agrega métricas del repositorio central sin exponer la lógica de cálculo a la UI.</p>
+ */
 public class AdminReportesController implements Initializable {
 
-    private AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
+    private final AdministracionFacade administracionFacade = new AdministracionFacadeImpl();
 
-    @FXML private DatePicker dtpDesde;
-    @FXML private DatePicker dtpHasta;
-    @FXML private Button     btnConsultar;
-    @FXML private Button     btnLimpiar;
-    @FXML private Label      lblMensaje;
+    @FXML
+    private DatePicker dtpDesde;
+    @FXML
+    private DatePicker dtpHasta;
+    @FXML
+    private Button btnConsultar;
+    @FXML
+    private Label lblMensaje;
 
-    @FXML private Label lblTotalVentas;
-    @FXML private Label lblTotalCompras;
-    @FXML private Label lblCanceladas;
-    @FXML private Label lblTasaCancelacion;
+    @FXML
+    private Label lblTotalVentas;
+    @FXML
+    private Label lblTotalCompras;
+    @FXML
+    private Label lblCanceladas;
+    @FXML
+    private Label lblTasaCancelacion;
 
-    @FXML private Label lblExtraVIP;
-    @FXML private Label lblExtraSeguro;
-    @FXML private Label lblExtraParq;
-    @FXML private Label lblExtraMerch;
-    @FXML private Label lblExtraAcceso;
+    @FXML
+    private Label lblExtraVIP;
+    @FXML
+    private Label lblExtraSeguro;
+    @FXML
+    private Label lblExtraParq;
+    @FXML
+    private Label lblExtraMerch;
+    @FXML
+    private Label lblExtraAcceso;
 
-    @FXML private Label lblTopEventos;
+    @FXML
+    private Label lblTopEventos;
 
-    @FXML private Button btnExportarCSV;
-    @FXML private Button btnExportarPDF;
-
+    @FXML
+    private Button btnExportarCSV;
     private ReporteOperativo reporteActual;
 
     @Override
@@ -60,10 +91,8 @@ public class AdminReportesController implements Initializable {
         dtpHasta.setValue(LocalDate.now());
     }
 
-    public void setAdministracionFacade(AdministracionFacade f) { this.administracionFacade = f; }
-
     @FXML
-    public void onConsultarClick(ActionEvent event) {
+    public void onConsultarClick() {
         LocalDate desde = dtpDesde.getValue();
         LocalDate hasta = dtpHasta.getValue();
         if (desde != null && hasta != null && desde.isAfter(hasta)) {
@@ -80,7 +109,7 @@ public class AdminReportesController implements Initializable {
     }
 
     @FXML
-    public void onLimpiarClick(ActionEvent event) {
+    public void onLimpiarClick() {
         dtpDesde.setValue(LocalDate.now().withDayOfMonth(1));
         dtpHasta.setValue(LocalDate.now());
         reporteActual = null;
@@ -90,12 +119,12 @@ public class AdminReportesController implements Initializable {
     }
 
     @FXML
-    public void onExportarCSVClick(ActionEvent event) {
+    public void onExportarCSVClick() {
         exportar(new ExportadorCSVAdminAdapter());
     }
 
     @FXML
-    public void onExportarPDFClick(ActionEvent event) {
+    public void onExportarPDFClick() {
         exportar(new ExportadorPDFAdminAdapter());
     }
 
@@ -142,7 +171,7 @@ public class AdminReportesController implements Initializable {
             int pos = 1;
             for (Map.Entry<String, Double> entry : r.getTopEventos().entrySet()) {
                 sb.append(pos++).append(". ").append(entry.getKey())
-                  .append("  →  ").append(formatMoney(entry.getValue())).append('\n');
+                        .append("  →  ").append(formatMoney(entry.getValue())).append('\n');
             }
             lblTopEventos.setText(sb.toString().trim());
         }
@@ -166,19 +195,52 @@ public class AdminReportesController implements Initializable {
     }
 
     // --- Navegación ---
-    @FXML public void onNavDashboard(ActionEvent e) { navegar("AdminDashboardView.fxml"); }
-    @FXML public void onNavEventos(ActionEvent e) { navegar("AdminEventosView.fxml"); }
-    @FXML public void onNavRecintos(ActionEvent e) { navegar("AdminRecintosView.fxml"); }
-    @FXML public void onNavUsuarios(ActionEvent e) { navegar("AdminUsuariosView.fxml"); }
-    @FXML public void onNavCompras(ActionEvent e) { navegar("AdminComprasView.fxml"); }
-    @FXML public void onNavAsientos(ActionEvent e) { navegar("AdminGestorAsientosView.fxml"); }
-    @FXML public void onNavReportes(ActionEvent e) { }
-    @FXML public void onNavIncidencias(ActionEvent e) { navegar("AdminIncidenciasView.fxml"); }
-    @FXML public void onCerrarSesion(ActionEvent e) {
+    @FXML
+    public void onNavDashboard() {
+        navegar("AdminDashboardView.fxml");
+    }
+
+    @FXML
+    public void onNavEventos() {
+        navegar("AdminEventosView.fxml");
+    }
+
+    @FXML
+    public void onNavRecintos() {
+        navegar("AdminRecintosView.fxml");
+    }
+
+    @FXML
+    public void onNavUsuarios() {
+        navegar("AdminUsuariosView.fxml");
+    }
+
+    @FXML
+    public void onNavCompras() {
+        navegar("AdminComprasView.fxml");
+    }
+
+    @FXML
+    public void onNavAsientos() {
+        navegar("AdminGestorAsientosView.fxml");
+    }
+
+    @FXML
+    public void onNavReportes() {
+    }
+
+    @FXML
+    public void onNavIncidencias() {
+        navegar("AdminIncidenciasView.fxml");
+    }
+
+    @FXML
+    public void onCerrarSesion() {
         SessionManager.getInstance().logout();
         Stage stage = (Stage) btnConsultar.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);
     }
+
     private void navegar(String fxml) {
         Stage stage = (Stage) btnConsultar.getScene().getWindow();
         ViewNavigator.cargarVistaAdmin(fxml, stage);

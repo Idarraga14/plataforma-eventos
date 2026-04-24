@@ -18,6 +18,21 @@ import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX de la pantalla de detalle de un evento seleccionado.
+ *
+ * <p>Lee el {@link Evento} inyectado desde {@link SessionManager} y puebla las etiquetas
+ * (nombre, categoría, ciudad, fecha, recinto, descripción) y el {@link ListView} de zonas,
+ * mostrando para cada zona el precio base y los cupos disponibles en tiempo real consultados
+ * a la fachada. El botón "Comprar" navega a la vista de asignación.</p>
+ *
+ * <p>[Requerimiento: RF-002] - Muestra la información completa del evento para que el
+ * usuario decida si continúa con la compra.</p>
+ * <p>[Requerimiento: RF-003] - Muestra los cupos disponibles por zona consultando
+ * {@link PlataformaFacade#obtenerCuposDisponibles(String, String)}.</p>
+ * <p>[Patrón: Facade] - Delega el cálculo de cupos a {@link PlataformaFacade} sin
+ * iterar directamente sobre el inventario de asientos.</p>
+ */
 public class DetalleEventoController implements Initializable {
 
     // Evento seleccionado (inyectado desde ExplorarEventosController)

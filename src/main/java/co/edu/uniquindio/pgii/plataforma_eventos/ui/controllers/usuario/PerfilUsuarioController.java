@@ -8,7 +8,6 @@ import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.SessionManager;
 import co.edu.uniquindio.pgii.plataforma_eventos.ui.util.ViewNavigator;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -22,23 +21,44 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador JavaFX de la pantalla de perfil del usuario autenticado.
+ *
+ * <p>Permite al usuario ver y editar sus datos personales (nombre, correo, teléfono) y
+ * gestionar sus medios de pago (tarjetas de crédito/débito): agregar nuevas y eliminar
+ * las existentes. Los cambios de perfil se persisten en el objeto {@link Usuario} de la
+ * sesión vía {@link PlataformaFacade#actualizarPerfil}.</p>
+ *
+ * <p>[Requerimiento: RF-008] - Implementa la consulta y actualización de datos personales
+ * del usuario, incluyendo la gestión de medios de pago.</p>
+ * <p>[Patrón: Facade] - Delega la actualización del perfil a {@link PlataformaFacade}
+ * para mantener la validación de negocio fuera del controlador.</p>
+ */
 public class PerfilUsuarioController implements Initializable {
 
-    private PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
+    private final PlataformaFacade plataformaFacade = new PlataformaFacadeImpl();
 
-    @FXML private TextField txtNombre;
-    @FXML private TextField txtCorreo;
-    @FXML private TextField txtTelefono;
-    @FXML private Label     lblMensajePerfil;
-    @FXML private Button    btnGuardarPerfil;
+    @FXML
+    private TextField txtNombre;
+    @FXML
+    private TextField txtCorreo;
+    @FXML
+    private TextField txtTelefono;
+    @FXML
+    private Label lblMensajePerfil;
+    @FXML
+    private Button btnGuardarPerfil;
 
-    @FXML private TableView<MedioPago>           tblMediosPago;
-    @FXML private TableColumn<MedioPago, String> colTitular;
-    @FXML private TableColumn<MedioPago, String> colDigitos;
-    @FXML private TextField                      txtTitularTarjeta;
-    @FXML private TextField                      txtNumeroTarjeta;
-    @FXML private Button                         btnAgregarMedio;
-    @FXML private Button                         btnEliminarMedio;
+    @FXML
+    private TableView<MedioPago> tblMediosPago;
+    @FXML
+    private TableColumn<MedioPago, String> colTitular;
+    @FXML
+    private TableColumn<MedioPago, String> colDigitos;
+    @FXML
+    private TextField txtTitularTarjeta;
+    @FXML
+    private TextField txtNumeroTarjeta;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -59,14 +79,10 @@ public class PerfilUsuarioController implements Initializable {
         }
     }
 
-    public void setPlataformaFacade(PlataformaFacade plataformaFacade) {
-        this.plataformaFacade = plataformaFacade;
-    }
-
     // --- HANDLERS ---
 
     @FXML
-    public void onGuardarPerfilClick(ActionEvent event) {
+    public void onGuardarPerfilClick() {
         Usuario actual = SessionManager.getInstance().getUsuarioActual();
         if (actual == null) return;
 
@@ -99,7 +115,7 @@ public class PerfilUsuarioController implements Initializable {
     }
 
     @FXML
-    public void onAgregarMedioClick(ActionEvent event) {
+    public void onAgregarMedioClick() {
         Usuario actual = SessionManager.getInstance().getUsuarioActual();
         if (actual == null) return;
 
@@ -119,7 +135,7 @@ public class PerfilUsuarioController implements Initializable {
     }
 
     @FXML
-    public void onEliminarMedioClick(ActionEvent event) {
+    public void onEliminarMedioClick() {
         MedioPago seleccionado = tblMediosPago.getSelectionModel().getSelectedItem();
         if (seleccionado == null) {
             mostrarMensaje("Selecciona una tarjeta para eliminar.", true);
@@ -133,24 +149,24 @@ public class PerfilUsuarioController implements Initializable {
     // --- NAVEGACIÓN ---
 
     @FXML
-    public void onNavEventos(ActionEvent event) {
+    public void onNavEventos() {
         Stage stage = (Stage) btnGuardarPerfil.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("ExplorarEventosView.fxml", stage);
     }
 
     @FXML
-    public void onNavHistorial(ActionEvent event) {
+    public void onNavHistorial() {
         Stage stage = (Stage) btnGuardarPerfil.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("HistorialComprasView.fxml", stage);
     }
 
     @FXML
-    public void onNavPerfil(ActionEvent event) {
+    public void onNavPerfil() {
         // ya estamos aquí
     }
 
     @FXML
-    public void onCerrarSesion(ActionEvent event) {
+    public void onCerrarSesion() {
         SessionManager.getInstance().logout();
         Stage stage = (Stage) btnGuardarPerfil.getScene().getWindow();
         ViewNavigator.cargarVistaUsuario("LoginView.fxml", stage);

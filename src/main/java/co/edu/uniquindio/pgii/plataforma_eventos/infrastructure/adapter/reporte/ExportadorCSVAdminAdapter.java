@@ -3,6 +3,19 @@ package co.edu.uniquindio.pgii.plataforma_eventos.infrastructure.adapter.reporte
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+/**
+ * Adaptador concreto que serializa un {@link ReporteOperativo} administrativo en formato CSV.
+ *
+ * <p>Genera un archivo CSV con tres secciones: cabecera con las métricas generales del período
+ * (ventas totales, compras, cancelaciones, tasa de cancelación), tabla de ingresos por servicio
+ * adicional (VIP, Seguro, Parqueadero, Merchandising, Acceso Preferencial) y tabla de top
+ * eventos por facturación descendente.</p>
+ *
+ * <p>[Requerimiento: RF-046] - Implementa la exportación del reporte operativo en CSV,
+ * seleccionado cuando el administrador elige {@link FormatoReporte#CSV} en el módulo de reportes.</p>
+ * <p>[Patrón: Adapter] - Actúa como <strong>Adapter Concreto</strong>; implementa
+ * {@link ExportadorReporteAdmin} (Target) para el módulo de reportes administrativos.</p>
+ */
 public class ExportadorCSVAdminAdapter implements ExportadorReporteAdmin {
 
     @Override

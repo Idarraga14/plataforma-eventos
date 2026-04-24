@@ -6,6 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Adaptador concreto que serializa un {@link ReporteOperativo} administrativo en formato PDF 1.4.
+ *
+ * <p>Genera un documento PDF de una página (fuente Helvetica 11pt) sin dependencias externas,
+ * con la misma técnica de construcción manual que {@code ExportadorPDFAdapter}. El documento
+ * incluye: período del reporte, métricas generales (ventas, compras, tasa de cancelación),
+ * sección de ingresos por servicio adicional y ranking de top eventos por facturación.</p>
+ *
+ * <p>[Requerimiento: RF-046] - Implementa la exportación del reporte operativo en PDF,
+ * seleccionado cuando el administrador elige {@link FormatoReporte#PDF} en el módulo de reportes.</p>
+ * <p>[Patrón: Adapter] - Actúa como <strong>Adapter Concreto</strong>; implementa
+ * {@link ExportadorReporteAdmin} (Target) para el módulo de reportes administrativos.
+ * Complementa a {@code ExportadorPDFAdapter} con la misma técnica pero sobre el DTO
+ * {@link ReporteOperativo} en lugar de sobre una {@code Compra} individual.</p>
+ */
 public class ExportadorPDFAdminAdapter implements ExportadorReporteAdmin {
 
     @Override
