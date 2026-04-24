@@ -1,0 +1,667 @@
+@startuml PlataformaEventos
+
+' ─────────────────────────────────────────────────
+'  ESTILOS GLOBALES
+' ─────────────────────────────────────────────────
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam ArrowColor #2c3e50
+skinparam ClassBorderColor #2c3e50
+skinparam ClassBackgroundColor #fdfefe
+skinparam NoteBackgroundColor #fef9e7
+skinparam NoteBorderColor #f39c12
+skinparam PackageBorderColor #85929e
+skinparam PackageBackgroundColor #f2f3f4
+
+hide empty members
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: DOMAIN — ENUMS
+' ═══════════════════════════════════════════════════════════
+package "domain.enums" #e8f8f5 {
+
+    enum AsientoEstado {
+        DISPONIBLE
+        RESERVADO
+        VENDIDO
+        BLOQUEADO
+    }
+
+    enum CompraEstado {
+        CREADA
+        PAGADA
+        CONFIRMADA
+        CANCELADA
+        REEMBOLSADA
+    }
+
+    enum EntradaEstado {
+        ACTIVA
+        USADA
+        CANCELADA
+    }
+
+    enum EventoCategoria {
+        CONCIERTO
+        TEATRO
+        CONFERENCIA
+    }
+
+    enum EventoEstado {
+        BORRADOR
+        PUBLICADO
+        PAUSADO
+        CANCELADO
+        FINALIZADO
+    }
+
+    enum IncidenciaEntidadAfectada {
+        EVENTO
+        COMPRA
+        USUARIO
+    }
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: DOMAIN — MODEL
+' ═══════════════════════════════════════════════════════════
+package "domain.model" #eaf4fb {
+
+    ' ── Recinto (plantilla física) ──────────────────────
+    class Recinto {
+        - idRecinto : String
+        - nombre : String
+        - direccion : String
+        - ciudad : String
+        - zonas : List<Zona>
+    }
+
+    class Zona {
+        - idZona : String
+        - nombre : String
+        - capacidad : int
+        - precioBase : double
+        - asientos : List<Asiento>
+    }
+
+    class Asiento {
+        - idAsiento : String
+        - fila : char
+        - numero : int
+        - habilitadoFisicamente : boolean
+        + getSalida() : String
+    }
+
+    note right of Asiento
+        <b>Plantilla física.</b>
+        No guarda disponibilidad;
+        eso vive en AsientoEvento.
+    end note
+
+    ' ── Inventario comercial por evento ─────────────────
+    class AsientoEvento {
+        - asientoFisico : Asiento
+        - estado : AsientoEstado
+        + getIdAsiento() : String
+        + bloquear()
+        + liberar()
+        + vender()
+    }
+
+    note right of AsientoEvento
+        <b>Patrón DDD:</b>
+        Separa plantilla física
+        (Recinto) del inventario
+        comercial (Evento).
+    end note
+
+    ' ── Evento (Patrón Builder) ─────────────────────────
+    class Evento {
+        - idEvento : String
+        - nombre : String
+        - categoria : EventoCategoria
+        - ciudad : String
+        - fecha : LocalDateTime
+        - estado : EventoEstado
+        - recinto : Recinto
+        - inventarioAsientos : Map<String, AsientoEvento>
+        + obtenerAsientoEvento(id) : AsientoEvento
+        + getInventarioDe(zona) : Collection<AsientoEvento>
+        - inicializarInventario()
+    }
+
+    class "Evento.EventoBuilder" as EventoBuilder {
+        - nombre : String
+        - categoria : EventoCategoria
+        - ciudad : String
+        - fecha : LocalDateTime
+        - recinto : Recinto
+        + conNombre(n) : EventoBuilder
+        + deCategoria(c) : EventoBuilder
+        + enCiudad(c) : EventoBuilder
+        + paraLaFecha(f) : EventoBuilder
+        + enRecinto(r) : EventoBuilder
+        + build() : Evento
+    }
+
+    note bottom of EventoBuilder
+        <b>Patrón Builder</b>
+        Construcción fluida de Evento.
+        El constructor es privado.
+    end note
+
+    ' ── Usuario y MedioPago ──────────────────────────────
+    class Usuario {
+        - idUsuario : String
+        - nombreCompleto : String
+        - correo : String
+        - password : String
+        - numeroTelefono : String
+        - esAdmin : boolean
+        - mediosPago : List<MedioPago>
+    }
+
+    class MedioPago {
+        - idMedioPago : String
+        - titular : String
+        - ultimosCuatroDigitos : String
+    }
+
+    ' ── Compra (Patrón State) ───────────────────────────
+    class Compra {
+        - idCompra : String
+        - fecha : LocalDateTime
+        - total : double
+        - estadoActual : CompraState
+        - entradas : List<Entrada>
+        + pagar()
+        + confirmar()
+        + cancelar()
+        + reembolsar()
+        + agregarEntrada(e)
+        + calcularTotal()
+        + getEstadoEnum() : CompraEstado
+    }
+
+    ' ── Entradas (Patrón Decorator base) ────────────────
+    abstract class Entrada {
+        - idEntrada : String
+        - precioBase : double
+        - estado : EntradaEstado
+        + getPrecioTotal() : double
+        + getDescripcionServicios() : String
+        + confirmarVenta()
+        + liberarRecursos()
+    }
+
+    class EntradaZona {
+        - zona : Zona
+        + getZona() : Zona
+    }
+
+    class EntradaAsiento {
+        - zona : Zona
+        - asientoEvento : AsientoEvento
+        + getAsientoEvento() : AsientoEvento
+        + reasignarA(ae : AsientoEvento)
+        + confirmarVenta()
+        + liberarRecursos()
+    }
+
+    ' ── Incidencia ──────────────────────────────────────
+    class Incidencia {
+        - idIncidencia : String
+        - tipo : String
+        - descripcion : String
+        - fecha : LocalDateTime
+        - entidadAfectada : IncidenciaEntidadAfectada
+        - idEntidadAfectada : String
+        - reportadoPor : String
+        - resuelta : boolean
+        + marcarResuelta()
+    }
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: DOMAIN — STATE  (Patrón State)
+' ═══════════════════════════════════════════════════════════
+package "domain.state" #fdf2f8 {
+
+    abstract class CompraState {
+        # compra : Compra
+        + pagar()
+        + confirmar()
+        + cancelar()
+        + reembolsar()
+        + {abstract} getEstadoEnum() : CompraEstado
+    }
+
+    class EstadoCreada {
+        + pagar()
+        + cancelar()
+        + getEstadoEnum() : CREADA
+    }
+
+    class EstadoPagada {
+        + confirmar()
+        + reembolsar()
+        + getEstadoEnum() : PAGADA
+    }
+
+    class EstadoConfirmada {
+        + getEstadoEnum() : CONFIRMADA
+    }
+
+    class EstadoCancelada {
+        + getEstadoEnum() : CANCELADA
+    }
+
+    class EstadoReembolsada {
+        + getEstadoEnum() : REEMBOLSADA
+    }
+
+    note top of CompraState
+        <b>Patrón State</b>
+        Cada estado encapsula las
+        transiciones válidas para
+        evitar condicionales dispersos.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: DOMAIN — DECORATOR  (Patrón Decorator)
+' ═══════════════════════════════════════════════════════════
+package "domain.decorator" #fef9e7 {
+
+    abstract class EntradaDecorator {
+        # entradaEnvuelta : Entrada
+        + getPrecioTotal() : double
+        + getDescripcionServicios() : String
+        + confirmarVenta()
+        + liberarRecursos()
+        + getEntradaEnvuelta() : Entrada
+    }
+
+    class PaqueteVIPDecorator {
+        + {static} COSTO = 50 000
+        + getPrecioTotal() : double
+        + getDescripcionServicios() : String
+    }
+
+    class SeguroCancelacionDecorator {
+        + {static} COSTO_DEFAULT = 15 000
+        - costoSeguro : double
+        + getPrecioTotal() : double
+        + getDescripcionServicios() : String
+    }
+
+    class ParqueaderoDecorator {
+        + {static} COSTO = 20 000
+        + getPrecioTotal() : double
+        + getDescripcionServicios() : String
+    }
+
+    class MerchandisingDecorator {
+        + {static} COSTO = 35 000
+        + getPrecioTotal() : double
+        + getDescripcionServicios() : String
+    }
+
+    class AccesoPreferencialDecorator {
+        + {static} COSTO = 25 000
+        + getPrecioTotal() : double
+        + getDescripcionServicios() : String
+    }
+
+    note top of EntradaDecorator
+        <b>Patrón Decorator</b>
+        Añade servicios (VIP, Seguro,
+        Parqueadero, Merchandising,
+        Acceso) sin modificar Entrada.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: APPLICATION — STRATEGY  (Patrón Strategy)
+' ═══════════════════════════════════════════════════════════
+package "application.strategy" #eaf4fb {
+
+    interface AsignacionStrategy {
+        + asignarCupo(evento, idZona, idAsiento) : Entrada
+    }
+
+    class AsignacionPorZonaStrategy {
+        + asignarCupo(evento, idZona, idAsiento) : Entrada
+    }
+
+    class AsignacionPorAsientoStrategy {
+        + asignarCupo(evento, idZona, idAsiento) : Entrada
+    }
+
+    note bottom of AsignacionStrategy
+        <b>Patrón Strategy</b>
+        Intercambia el algoritmo de
+        asignación en tiempo de ejecución:
+        zona libre vs. asiento numerado.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: APPLICATION — FACTORY  (Patrón Factory)
+' ═══════════════════════════════════════════════════════════
+package "application.factory" #e8f8f5 {
+
+    class EntradaFactory {
+        + {static} fabricar(zona) : Entrada
+        + {static} fabricar(zona, asientoEvento) : Entrada
+    }
+
+    note right of EntradaFactory
+        <b>Patrón Factory</b>
+        Dos variantes: zona libre
+        o asiento numerado.
+        Constructor privado.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: APPLICATION — OBSERVER  (Patrón Observer)
+' ═══════════════════════════════════════════════════════════
+package "application.observer" #fdf2f8 {
+
+    interface EventoObserver {
+        + onAforoActualizado(evento : Evento)
+    }
+
+    interface EventoSubject {
+        + suscribir(obs : EventoObserver)
+        + desuscribir(obs : EventoObserver)
+        + notificarCambioAforo(evento : Evento)
+    }
+
+    note right of EventoObserver
+        <b>Patrón Observer</b>
+        Notifica a los controladores
+        JavaFX ante cambios de aforo.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: APPLICATION — FACADE  (Patrón Facade)
+' ═══════════════════════════════════════════════════════════
+package "application.facade" #fef9e7 {
+
+    interface PlataformaFacade {
+        + login(correo, pwd) : Usuario
+        + registrarUsuario(...) : Usuario
+        + obtenerEventosDisponibles() : List<Evento>
+        + obtenerCuposDisponibles(idEvento, idZona) : int
+        + crearOrdenCompra(...) : Compra
+        + procesarPagoOrden(idCompra, tarjeta, cvv)
+        + cancelarOrdenCompra(idCompra)
+        + generarComprobante(idCompra, formato) : byte[]
+    }
+
+    class PlataformaFacadeImpl {
+        - estrategia : AsignacionStrategy
+        + login(correo, pwd) : Usuario
+        + crearOrdenCompra(...) : Compra
+        + procesarPagoOrden(...)
+    }
+
+    interface AdministracionFacade {
+        + crearEvento(...) : Evento
+        + listarEventos() : List<Evento>
+        + listarCompras() : List<Compra>
+        + reembolsarCompra(idCompra)
+        + reasignarAsiento(idCompra, idAntiguo, idNuevo)
+        + bloquearAsientoEnEvento(idEvento, idAsiento)
+        + registrarIncidencia(...) : Incidencia
+        + generarReporteOperativo(desde, hasta) : ReporteOperativo
+        + totalVentasPeriodo(desde, hasta) : double
+        + ocupacionPorZona(idEvento) : Map<String, Double>
+        + ingresosPorServicioAdicional() : Map<String, Double>
+    }
+
+    class AdministracionFacadeImpl {
+        + crearEvento(...) : Evento
+        + generarReporteOperativo(desde, hasta) : ReporteOperativo
+        + reasignarAsiento(...)
+    }
+
+    note top of PlataformaFacade
+        <b>Patrón Facade</b>
+        Simplifica la API para la UI
+        (cliente) y el Admin ocultando
+        la complejidad del dominio.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: INFRASTRUCTURE — ADAPTER  (Patrón Adapter)
+' ═══════════════════════════════════════════════════════════
+package "infrastructure.adapter.reporte" #e8f8f5 {
+
+    enum FormatoReporte {
+        PDF
+        CSV
+    }
+
+    interface ExportadorReporte {
+        + exportar(compra : Compra) : byte[]
+        + getExtension() : String
+        + getDescripcionFormato() : String
+    }
+
+    class ExportadorCSVAdapter {
+        + exportar(compra) : byte[]
+        + getExtension() : "csv"
+    }
+
+    class ExportadorPDFAdapter {
+        + exportar(compra) : byte[]
+        + getExtension() : "pdf"
+    }
+
+    interface ExportadorReporteAdmin {
+        + exportar(reporte : ReporteOperativo) : byte[]
+        + getExtension() : String
+        + getDescripcionFormato() : String
+    }
+
+    class ExportadorCSVAdminAdapter {
+        + exportar(reporte) : byte[]
+        + getExtension() : "csv"
+    }
+
+    class ExportadorPDFAdminAdapter {
+        + exportar(reporte) : byte[]
+        + getExtension() : "pdf"
+    }
+
+    class ReporteOperativo {
+        - desde : LocalDate
+        - hasta : LocalDate
+        - totalVentas : double
+        - totalCompras : int
+        - comprasCanceladas : int
+        - tasaCancelacion : double
+        - ingresosPorExtra : Map<String, Double>
+        - topEventos : Map<String, Double>
+    }
+
+    note top of ExportadorReporte
+        <b>Patrón Adapter</b>
+        Adapta formatos binarios externos
+        (PDF/CSV) a la interfaz interna
+        del sistema sin dependencias.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  PACKAGE: INFRASTRUCTURE — SINGLETON + SEEDER
+' ═══════════════════════════════════════════════════════════
+package "infrastructure" #fdf2f8 {
+
+    class PlataformaEventosSingleton {
+        - {static} instance : PlataformaEventosSingleton
+        - usuarios : List<Usuario>
+        - eventos : List<Evento>
+        - recintos : List<Recinto>
+        - compras : List<Compra>
+        - incidencias : List<Incidencia>
+        - observadores : List<EventoObserver>
+        + {static} getInstance() : PlataformaEventosSingleton
+        + buscarUsuario(id) : Usuario
+        + buscarEvento(id) : Evento
+        + notificarCambio(evento)
+        + suscribir(obs)
+        + desuscribir(obs)
+    }
+
+    class DatosPruebaSeeder {
+        + {static} inyectarDatos(db : PlataformaEventosSingleton)
+    }
+
+    note right of PlataformaEventosSingleton
+        <b>Patrón Singleton</b>
+        Única fuente de verdad en memoria.
+        Implementa EventoSubject para
+        notificar a los observadores.
+    end note
+}
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — DOMAIN MODEL
+' ═══════════════════════════════════════════════════════════
+
+' Recinto → Zona → Asiento (plantilla física)
+Recinto "1" *-- "1..*" Zona : contiene
+Zona "1" *-- "0..*" Asiento : tiene
+
+' Asiento → AsientoEvento (inventario comercial)
+AsientoEvento --> Asiento : referencia física
+AsientoEvento --> AsientoEstado : estado
+
+' Evento → AsientoEvento (inventario por evento)
+Evento "1" *-- "0..*" AsientoEvento : inventarioAsientos
+Evento --> Recinto : enRecinto
+Evento --> EventoCategoria
+Evento --> EventoEstado
+
+' EventoBuilder construye Evento
+EventoBuilder ..> Evento : <<crea>>
+Evento +-- EventoBuilder
+
+' Usuario → MedioPago
+Usuario "1" *-- "0..*" MedioPago : mediosPago
+
+' Compra → Estado/Entradas
+Compra --> Usuario
+Compra --> Evento
+Compra "1" *-- "1..*" Entrada : entradas
+Compra --> CompraState : estadoActual
+
+' Entrada
+EntradaZona --|> Entrada
+EntradaAsiento --|> Entrada
+EntradaAsiento --> AsientoEvento : asientoEvento
+EntradaAsiento --> Zona : zona
+EntradaZona --> Zona : zona
+Entrada --> EntradaEstado
+
+' Incidencia
+Incidencia --> IncidenciaEntidadAfectada
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — PATRÓN STATE
+' ═══════════════════════════════════════════════════════════
+
+CompraState --> Compra : compra
+EstadoCreada --|> CompraState
+EstadoPagada --|> CompraState
+EstadoConfirmada --|> CompraState
+EstadoCancelada --|> CompraState
+EstadoReembolsada --|> CompraState
+CompraState --> CompraEstado
+
+' Transiciones de estado
+EstadoCreada ..> EstadoPagada : pagar()
+EstadoCreada ..> EstadoCancelada : cancelar()
+EstadoPagada ..> EstadoConfirmada : confirmar()
+EstadoPagada ..> EstadoReembolsada : reembolsar()
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — PATRÓN DECORATOR
+' ═══════════════════════════════════════════════════════════
+
+EntradaDecorator --|> Entrada
+EntradaDecorator o-- Entrada : entradaEnvuelta
+
+PaqueteVIPDecorator --|> EntradaDecorator
+SeguroCancelacionDecorator --|> EntradaDecorator
+ParqueaderoDecorator --|> EntradaDecorator
+MerchandisingDecorator --|> EntradaDecorator
+AccesoPreferencialDecorator --|> EntradaDecorator
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — PATRÓN STRATEGY
+' ═══════════════════════════════════════════════════════════
+
+AsignacionPorZonaStrategy ..|> AsignacionStrategy
+AsignacionPorAsientoStrategy ..|> AsignacionStrategy
+AsignacionPorZonaStrategy ..> EntradaFactory : usa
+AsignacionPorAsientoStrategy ..> EntradaFactory : usa
+PlataformaFacadeImpl --> AsignacionStrategy : estrategia
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — PATRÓN FACTORY
+' ═══════════════════════════════════════════════════════════
+
+EntradaFactory ..> EntradaZona : <<crea>>
+EntradaFactory ..> EntradaAsiento : <<crea>>
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — PATRÓN OBSERVER
+' ═══════════════════════════════════════════════════════════
+
+PlataformaEventosSingleton ..|> EventoSubject
+EventoSubject --> EventoObserver : notifica
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — PATRÓN FACADE
+' ═══════════════════════════════════════════════════════════
+
+PlataformaFacadeImpl ..|> PlataformaFacade
+AdministracionFacadeImpl ..|> AdministracionFacade
+PlataformaFacadeImpl --> PlataformaEventosSingleton : plat
+AdministracionFacadeImpl --> PlataformaEventosSingleton : plat
+AdministracionFacadeImpl ..> ReporteOperativo : <<crea>>
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — PATRÓN ADAPTER
+' ═══════════════════════════════════════════════════════════
+
+ExportadorCSVAdapter ..|> ExportadorReporte
+ExportadorPDFAdapter ..|> ExportadorReporte
+ExportadorCSVAdminAdapter ..|> ExportadorReporteAdmin
+ExportadorPDFAdminAdapter ..|> ExportadorReporteAdmin
+ExportadorReporteAdmin ..> ReporteOperativo
+ExportadorReporte ..> Compra
+PlataformaFacadeImpl ..> ExportadorReporte : usa
+AdministracionFacadeImpl ..> ExportadorReporteAdmin : usa
+
+' ═══════════════════════════════════════════════════════════
+'  RELACIONES — SINGLETON + SEEDER
+' ═══════════════════════════════════════════════════════════
+
+PlataformaEventosSingleton *-- "0..*" Usuario
+PlataformaEventosSingleton *-- "0..*" Evento
+PlataformaEventosSingleton *-- "0..*" Recinto
+PlataformaEventosSingleton *-- "0..*" Compra
+PlataformaEventosSingleton *-- "0..*" Incidencia
+PlataformaEventosSingleton "1" o-- "0..*" EventoObserver : observadores
+
+DatosPruebaSeeder ..> PlataformaEventosSingleton : inyecta datos
+
+@enduml
